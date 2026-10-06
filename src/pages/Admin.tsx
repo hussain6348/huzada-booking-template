@@ -1,3 +1,10 @@
-export function AdminPage() {
-  return <div className="p-8"><h1 className="text-2xl font-bold">Admin Dashboard</h1><p>Orders will appear here.</p></div>
+export function Admin() {
+  return (
+    <div className="min-h-screen bg-zinc-50 flex">
+      <div className="w-2/3 border-r">Live Preview Area</div>
+      <div className="w-1/3">Slide-over Editing Area</div>
+    </div>
+  );
 }
+
+export default Admin;

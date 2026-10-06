@@ -1,0 +1,7 @@
+{
+  "name": "Huzada Booking & Catalog",
+  "description": "WhatsApp-based booking engine with client appointments dashboard.",
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

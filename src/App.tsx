@@ -1,33 +1,54 @@
-import { useEffect, useState } from 'react';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import BookingForm from './components/BookingForm';
+import Admin from './pages/Admin';
 
 export default function App() {
-  const [appointments, setAppointments] = useState<any[]>([]);
+  const location = useLocation();
 
-  useEffect(() => {
-    fetch('/api/appointments')
-      .then(res => res.json())
-      .then(data => {
-        if (data.results?.[0]?.response?.result?.rows) {
-          setAppointments(data.results[0].response.result.rows);
-        }
-      });
-  }, []);
+  const navLinks = [
+    { path: '/', label: 'Book Appointment' },
+    { path: '/admin', label: 'Admin Dashboard' }
+  ];
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6">Client Dashboard</h1>
-      <div className="bg-white rounded-lg shadow p-6">
-        {appointments.length === 0 ? (
-          <p className="text-gray-500">No appointments found.</p>
-        ) : (
-          appointments.map((app) => (
-            <div key={app.id} className="border-b last:border-0 py-3">
-              <p className="font-semibold text-lg">{app.date} at {app.time}</p>
-              <p className="text-gray-700">{app.client_name} - {app.client_phone}</p>
-            </div>
-          ))
-        )}
-      </div>
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <nav className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <span className="font-bold text-xl text-gray-800">Booking Engine</span>
+          <div className="flex gap-2">
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                    isActive
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
+
+      <main className="flex-1">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <div className="p-8 flex items-center justify-center min-h-[80vh]">
+                <BookingForm />
+              </div>
+            }
+          />
+          <Route path="/admin" element={<Admin />} />
+        </Routes>
+      </main>
     </div>
   );
 }
