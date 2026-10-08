@@ -290,9 +290,9 @@ export function Admin() {
               <h1 className="text-base font-bold text-zinc-950 tracking-tight">
                 Operations Console
               </h1>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium bg-zinc-100 text-zinc-700 border border-zinc-200/60">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-zinc-100 text-zinc-700 border border-zinc-200/60">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Cloudflare Pages + Turso
+                Live Sync Active
               </span>
             </div>
           </div>
@@ -776,10 +776,10 @@ export function Admin() {
                 <div className="bg-white border border-zinc-200/90 rounded-xl p-5 space-y-2 text-xs text-zinc-600 shadow-2xs">
                   <span className="font-semibold text-zinc-900 block flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                    Cloudflare Edge Health: Optimal
+                    System Status: Operational
                   </span>
                   <p className="leading-relaxed">
-                    Serverless API endpoints are responding normally. New appointments logged in the public flow will appear dynamically.
+                    All booking channels and reservation registries are synchronized. New appointments will appear in real time.
                   </p>
                 </div>
               </div>
