@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
-export default function BookingForm({ service }: { service: any }) {
-  const [formData, setFormData] = useState({ name: '', phone: '', date: '', time: '' });
+export default function BookingForm({ service = { id: 1, name: "General Appointment" } }: { service?: any }) {
+  const [formData, setFormData] = useState({ name: "", phone: "", date: "", time: "" });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch('/api/book', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           service_id: service.id,
           service_name: service.name,
@@ -27,14 +27,11 @@ export default function BookingForm({ service }: { service: any }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to book appointment');
+        throw new Error(data.error || "Failed to book appointment");
       }
 
-      // Format WhatsApp Message
       const message = `Hello! I would like to book an appointment.\n\n*Service:* ${service.name}\n*Date:* ${formData.date}\n*Time:* ${formData.time}\n*Name:* ${formData.name}\n*Phone:* ${formData.phone}`;
-      
-      // Redirect to WhatsApp
-      window.location.href = `https://wa.me/${data.whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
+      window.location.href = `https://wa.me/${data.whatsapp?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
       
     } catch (err: any) {
       setError(err.message);
@@ -55,7 +52,7 @@ export default function BookingForm({ service }: { service: any }) {
       <div><label className="block text-sm text-gray-600">Time</label><input required type="time" className="w-full border p-2 rounded mt-1" onChange={e => setFormData({...formData, time: e.target.value})} /></div>
       
       <button disabled={loading} type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded mt-4 hover:bg-blue-700 disabled:opacity-50">
-        {loading ? 'Confirming...' : 'Confirm Booking'}
+        {loading ? "Confirming..." : "Confirm Booking"}
       </button>
     </form>
   );
