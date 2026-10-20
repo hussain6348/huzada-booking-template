@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import BookingForm from "./components/BookingForm";
 import { Clock, ArrowRight } from "lucide-react";
 
-// Fallback mock services while the database populates
 const defaultServices = [
-  { id: 1, name: "Standard Consultation", description: "A comprehensive 30-minute session.", price: 50, duration_minutes: 30 },
-  { id: 2, name: "Premium Service", description: "Extended 1-hour professional service.", price: 100, duration_minutes: 60 }
+  { id: 1, name: "Standard Consultation", description: "A comprehensive 30-minute session with our lead specialists.", price: 50, duration_minutes: 30 },
+  { id: 2, name: "Premium Service", description: "Extended 1-hour professional service for detailed requirements.", price: 100, duration_minutes: 60 }
 ];
 
 export default function App() {
@@ -13,55 +12,63 @@ export default function App() {
   const [services, setServices] = useState(defaultServices);
 
   useEffect(() => {
-    // Attempt to fetch live services if endpoint exists
     fetch("/api/services").then(res => res.json()).then(data => {
       if (data.services && data.services.length > 0) setServices(data.services);
     }).catch(() => {});
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans">
-      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold tracking-tight text-gray-900">Booking Portal</h1>
+    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans relative">
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="text-xl font-extrabold tracking-tight text-gray-900 flex items-center gap-2">
+            <div className="w-8 h-8 bg-gray-900 rounded-lg"></div>
+            Huzada Booking
+          </div>
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-6 py-10">
-        {!selectedService ? (
-          <>
-            <div className="mb-8">
-              <h2 className="text-3xl font-extrabold text-gray-900">Our Services</h2>
-              <p className="mt-2 text-gray-500">Select a service below to schedule your appointment.</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {services.map(srv => (
-                <div key={srv.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-gray-300 transition-all flex flex-col group">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900">{srv.name}</h3>
-                    <p className="text-gray-500 text-sm mt-2 leading-relaxed">{srv.description}</p>
-                    <div className="flex items-center gap-4 mt-5 text-sm font-medium text-gray-700">
-                      <div className="flex items-center gap-1.5"><Clock size={16} className="text-gray-400"/> {srv.duration_minutes} min</div>
-                      <div className="flex items-center gap-1.5 text-gray-900">${srv.price}</div>
-                    </div>
-                  </div>
-                  <button onClick={() => setSelectedService(srv)} className="mt-6 w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white py-2.5 rounded-lg font-medium transition-colors">
-                    Book Now <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                  </button>
+      <section className="bg-white border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-6 py-20 text-center">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
+            Professional Services, <span className="text-blue-600">Booked Instantly.</span>
+          </h1>
+          <p className="mt-6 text-lg text-gray-500 max-w-2xl mx-auto">
+            Browse our available services below and secure your appointment in seconds using our seamless checkout system.
+          </p>
+        </div>
+      </section>
+
+      <main className="max-w-6xl mx-auto px-6 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {services.map(srv => (
+            <div key={srv.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 hover:shadow-lg hover:border-gray-300 transition-all flex flex-col group relative overflow-hidden">
+              <div className="flex-1">
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-xl font-bold text-gray-900">{srv.name}</h3>
+                  <span className="bg-gray-100 text-gray-800 text-sm font-bold px-3 py-1 rounded-full">${srv.price}</span>
                 </div>
-              ))}
+                <p className="text-gray-500 text-sm leading-relaxed">{srv.description}</p>
+                <div className="flex items-center gap-2 mt-6 text-sm font-medium text-gray-600 bg-gray-50 w-fit px-3 py-1.5 rounded-lg border border-gray-100">
+                  <Clock size={16} className="text-gray-400"/> {srv.duration_minutes} Minutes
+                </div>
+              </div>
+              <button onClick={() => setSelectedService(srv)} className="mt-8 w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white py-3 rounded-xl font-semibold transition-colors shadow-sm">
+                Book Appointment <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
-          </>
-        ) : (
-          <div className="max-w-2xl mx-auto">
-             <button onClick={() => setSelectedService(null)} className="text-gray-500 hover:text-gray-900 mb-6 flex items-center gap-2 text-sm font-medium transition-colors">
-               &larr; Back to services
-             </button>
-             <BookingForm service={selectedService} />
-          </div>
-        )}
+          ))}
+        </div>
       </main>
+
+      {selectedService && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={() => setSelectedService(null)}></div>
+          <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+             <BookingForm service={selectedService} onClose={() => setSelectedService(null)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
