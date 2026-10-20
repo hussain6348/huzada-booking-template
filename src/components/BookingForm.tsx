@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { Calendar, Clock, User, Phone } from "lucide-react";
 
-export default function BookingForm({ service = { id: 1, name: "General Appointment" } }: { service?: any }) {
+export default function BookingForm({ service }: { service: any }) {
   const [formData, setFormData] = useState({ name: "", phone: "", date: "", time: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -25,10 +26,7 @@ export default function BookingForm({ service = { id: 1, name: "General Appointm
       });
 
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to book appointment");
-      }
+      if (!response.ok) throw new Error(data.error || "Failed to book appointment");
 
       const message = `Hello! I would like to book an appointment.\n\n*Service:* ${service.name}\n*Date:* ${formData.date}\n*Time:* ${formData.time}\n*Name:* ${formData.name}\n*Phone:* ${formData.phone}`;
       window.location.href = `https://wa.me/${data.whatsapp?.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
@@ -41,19 +39,40 @@ export default function BookingForm({ service = { id: 1, name: "General Appointm
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-bold text-gray-800 mb-4">Book {service.name}</h2>
-      
-      {error && <div className="p-3 bg-red-100 text-red-700 rounded">{error}</div>}
-      
-      <div><label className="block text-sm text-gray-600">Name</label><input required type="text" className="w-full border p-2 rounded mt-1" onChange={e => setFormData({...formData, name: e.target.value})} /></div>
-      <div><label className="block text-sm text-gray-600">Phone</label><input required type="tel" className="w-full border p-2 rounded mt-1" onChange={e => setFormData({...formData, phone: e.target.value})} /></div>
-      <div><label className="block text-sm text-gray-600">Date</label><input required type="date" className="w-full border p-2 rounded mt-1" onChange={e => setFormData({...formData, date: e.target.value})} /></div>
-      <div><label className="block text-sm text-gray-600">Time</label><input required type="time" className="w-full border p-2 rounded mt-1" onChange={e => setFormData({...formData, time: e.target.value})} /></div>
-      
-      <button disabled={loading} type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded mt-4 hover:bg-blue-700 disabled:opacity-50">
-        {loading ? "Confirming..." : "Confirm Booking"}
-      </button>
-    </form>
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-gray-50/50 p-6 border-b border-gray-100">
+        <h2 className="text-xl font-bold text-gray-900">Schedule {service.name}</h2>
+        <p className="text-sm text-gray-500 mt-1">Fill out your details below to secure your time slot.</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        {error && <div className="p-4 bg-red-50 text-red-700 text-sm font-medium rounded-lg border border-red-100">{error}</div>}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><User size={16} className="text-gray-400"/> Full Name</label>
+            <input required type="text" placeholder="John Doe" className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all" onChange={e => setFormData({...formData, name: e.target.value})} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Phone size={16} className="text-gray-400"/> Phone Number</label>
+            <input required type="tel" placeholder="+1 (555) 000-0000" className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all" onChange={e => setFormData({...formData, phone: e.target.value})} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Calendar size={16} className="text-gray-400"/> Date</label>
+            <input required type="date" className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all" onChange={e => setFormData({...formData, date: e.target.value})} />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2"><Clock size={16} className="text-gray-400"/> Time</label>
+            <input required type="time" className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all" onChange={e => setFormData({...formData, time: e.target.value})} />
+          </div>
+        </div>
+
+        <div className="pt-2">
+          <button disabled={loading} type="submit" className="w-full bg-gray-900 text-white font-semibold py-3.5 rounded-lg hover:bg-black disabled:opacity-70 disabled:cursor-not-allowed transition-all flex justify-center items-center gap-2 shadow-sm">
+            {loading ? "Confirming Slot..." : "Confirm Booking"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
