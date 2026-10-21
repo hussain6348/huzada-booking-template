@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import BookingEngine from './components/BookingEngine';
+import { BookingEngine } from './components/BookingEngine';
 import { Admin } from './pages/Admin';
 import { AdminLogin } from './components/AdminLogin';
 import { isAuthenticated, AUTH_CHANGE_EVENT } from './lib/auth';
@@ -24,3 +24,4 @@ export default function App() {
     </Routes>
   );
 }
+

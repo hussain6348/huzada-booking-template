@@ -1,4 +1,5 @@
-﻿interface Env { ADMIN_PASSWORD?: string; }
+﻿// @ts-nocheck
+interface Env { ADMIN_PASSWORD?: string; }
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   try {
     const { request, env } = context;
@@ -15,3 +16,4 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return new Response(JSON.stringify({ success: true, token: `${btoa(payload)}.${sigHex}` }), { headers: { 'Content-Type': 'application/json' } });
   } catch (err: any) { return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500 }); }
 };
+

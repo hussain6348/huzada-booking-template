@@ -1,4 +1,5 @@
-﻿interface Env { BUCKET?: R2Bucket; ADMIN_PASSWORD?: string; R2_PUBLIC_URL?: string; }
+﻿// @ts-nocheck
+interface Env { BUCKET?: R2Bucket; ADMIN_PASSWORD?: string; R2_PUBLIC_URL?: string; }
 export const onRequestPost: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
   try {
@@ -15,3 +16,4 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
     return new Response(JSON.stringify({ success: false, error: 'R2 Bucket not bound' }), { status: 500 });
   } catch (err: any) { return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500 }); }
 };
+

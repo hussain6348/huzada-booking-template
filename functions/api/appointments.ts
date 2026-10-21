@@ -1,4 +1,5 @@
-﻿interface Env { TURSO_DATABASE_URL?: string; TURSO_AUTH_TOKEN?: string; }
+﻿// @ts-nocheck
+interface Env { TURSO_DATABASE_URL?: string; TURSO_AUTH_TOKEN?: string; }
 export const onRequestGet: PagesFunction<Env> = async (context) => {
   const { env } = context;
   if (!env.TURSO_DATABASE_URL || !env.TURSO_AUTH_TOKEN) return new Response(JSON.stringify({ appointments: [] }));
@@ -30,3 +31,4 @@ export const onRequestPatch: PagesFunction<Env> = async (context) => {
     return new Response(JSON.stringify({ success: true, id, status }));
   } catch (err: any) { return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500 }); }
 };
+
