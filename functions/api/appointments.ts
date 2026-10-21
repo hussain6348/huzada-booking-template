@@ -1,40 +1,32 @@
-import { createClient } from "@libsql/client/web";
-import { requireAdmin, json } from "../_lib/guard";
-
-async function initDB(db: any) {
-  await db.execute(`CREATE TABLE IF NOT EXISTS services (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, description TEXT, price REAL, duration_minutes INTEGER DEFAULT 30)`);
-  await db.execute(`CREATE TABLE IF NOT EXISTS appointments (id INTEGER PRIMARY KEY AUTOINCREMENT, service_id INTEGER, client_name TEXT, client_phone TEXT, date TEXT, time TEXT, status TEXT DEFAULT 'pending', created_at TEXT)`);
-}
-
-export const onRequestGet = async (context: any) => {
-  const { request, env } = context;
-  const denied = await requireAdmin(request, env);
-  if (denied) return denied;
-
-  if (env?.TURSO_DATABASE_URL && env?.TURSO_AUTH_TOKEN) {
-    try {
-      const db = createClient({ url: env.TURSO_DATABASE_URL, authToken: env.TURSO_AUTH_TOKEN });
-      await initDB(db);
-      const result = await db.execute("SELECT * FROM appointments ORDER BY date DESC, time DESC");
-      return json({ success: true, appointments: result.rows });
-    } catch (e: any) { return json({ success: false, error: "Database error" }, 500); }
-  }
-  return json({ success: true, appointments: [], source: "fallback" });
+﻿interface Env { TURSO_DATABASE_URL?: string; TURSO_AUTH_TOKEN?: string; }
+export const onRequestGet: PagesFunction<Env> = async (context) => {
+  const { env } = context;
+  if (!env.TURSO_DATABASE_URL || !env.TURSO_AUTH_TOKEN) return new Response(JSON.stringify({ appointments: [] }));
+  try {
+    const res = await fetch(`${env.TURSO_DATABASE_URL.replace('libsql://', 'https://')}/v2/pipeline`, {
+      method: 'POST', headers: { Authorization: `Bearer ${env.TURSO_AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requests: [{ type: 'execute', stmt: { sql: 'SELECT * FROM appointments ORDER BY created_at DESC;' } }] }),
+    });
+    const data = await res.json() as any;
+    const rows = data?.results?.[0]?.response?.result?.rows || [];
+    const appointments = rows.map((r: any) => ({
+      id: String(r[0]?.value ?? ''), customerName: String(r[1]?.value ?? ''), customerPhone: String(r[2]?.value ?? ''),
+      serviceName: String(r[3]?.value ?? ''), date: String(r[4]?.value ?? ''), time: String(r[5]?.value ?? ''),
+      notes: String(r[6]?.value ?? ''), status: String(r[7]?.value ?? 'pending'), createdAt: String(r[8]?.value ?? new Date().toISOString())
+    }));
+    return new Response(JSON.stringify({ success: true, appointments }));
+  } catch (err: any) { return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500 }); }
 };
-
-export const onRequestDelete = async (context: any) => {
+export const onRequestPatch: PagesFunction<Env> = async (context) => {
   const { request, env } = context;
-  const denied = await requireAdmin(request, env);
-  if (denied) return denied;
-
-  const url = new URL(request.url);
-  const id = url.searchParams.get("id");
-  if (id && env?.TURSO_DATABASE_URL && env?.TURSO_AUTH_TOKEN) {
-    try {
-      const db = createClient({ url: env.TURSO_DATABASE_URL, authToken: env.TURSO_AUTH_TOKEN });
-      await db.execute({ sql: "DELETE FROM appointments WHERE id = ?", args: [id] });
-      return json({ success: true, id });
-    } catch (e: any) { return json({ success: false, error: "Failed to delete" }, 500); }
-  }
-  return json({ success: false, error: "Missing DB credentials" }, 500);
+  try {
+    const { id, status } = await request.json() as { id: string; status: string };
+    if (env.TURSO_DATABASE_URL && env.TURSO_AUTH_TOKEN) {
+      await fetch(`${env.TURSO_DATABASE_URL.replace('libsql://', 'https://')}/v2/pipeline`, {
+        method: 'POST', headers: { Authorization: `Bearer ${env.TURSO_AUTH_TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requests: [{ type: 'execute', stmt: { sql: 'UPDATE appointments SET status = ? WHERE id = ?;', args: [{ type: 'text', value: status }, { type: 'text', value: id }] } }] })
+      });
+    }
+    return new Response(JSON.stringify({ success: true, id, status }));
+  } catch (err: any) { return new Response(JSON.stringify({ success: false, error: err.message }), { status: 500 }); }
 };
