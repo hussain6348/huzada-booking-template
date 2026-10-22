@@ -50,45 +50,9 @@ export interface ServiceItem {
   price: number;
   duration: number; // in minutes
   description: string;
-  image: string;
+  images: string[];
   badge?: string;
 }
-
-const FALLBACK_APPOINTMENTS: BookingAppointment[] = [
-  {
-    id: 'APT-9104',
-    customerName: 'Ayesha Khan',
-    customerPhone: '03008765432',
-    serviceName: 'Teeth Whitening & Cleanse',
-    date: '2026-10-24',
-    time: '14:30',
-    notes: 'First time visit. Prefers afternoon slot.',
-    status: 'pending',
-    createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-  },
-  {
-    id: 'APT-8921',
-    customerName: 'Zainab Fatima',
-    customerPhone: '03219876543',
-    serviceName: 'Comprehensive Health Consultation',
-    date: '2026-10-23',
-    time: '11:00',
-    notes: 'Follow-up consultation. Reports attached.',
-    status: 'confirmed',
-    createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
-  },
-  {
-    id: 'APT-8715',
-    customerName: 'Bilal Ahmed',
-    customerPhone: '03335551234',
-    serviceName: 'Executive Wellness Therapy',
-    date: '2026-10-22',
-    time: '16:00',
-    notes: 'Confirmed and payment handled in advance.',
-    status: 'completed',
-    createdAt: new Date(Date.now() - 1000 * 60 * 600).toISOString(),
-  },
-];
 
 const DEFAULT_SERVICES: ServiceItem[] = [
   {
@@ -98,7 +62,7 @@ const DEFAULT_SERVICES: ServiceItem[] = [
     price: 85,
     duration: 45,
     description: 'Complete ultrasonic plaque removal, enamel polish, and brightening procedure.',
-    image: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80',
+    images: ['https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80'],
     badge: 'Popular',
   },
   {
@@ -108,7 +72,7 @@ const DEFAULT_SERVICES: ServiceItem[] = [
     price: 60,
     duration: 30,
     description: 'In-depth one-on-one session with our senior clinical specialist.',
-    image: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=800&q=80',
+    images: ['https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=800&q=80'],
     badge: 'Essential',
   },
   {
@@ -118,7 +82,7 @@ const DEFAULT_SERVICES: ServiceItem[] = [
     price: 120,
     duration: 60,
     description: 'Deep therapeutic revitalization and stress-relief treatment session.',
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&q=80',
+    images: ['https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&q=80'],
     badge: 'Premium',
   },
   {
@@ -128,7 +92,7 @@ const DEFAULT_SERVICES: ServiceItem[] = [
     price: 95,
     duration: 40,
     description: 'Advanced diagnostic screening and personalized dermatological care plan.',
-    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80',
+    images: ['https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80'],
     badge: '',
   },
 ];
@@ -152,7 +116,16 @@ export function Admin({ onLogout }: AdminProps = {}) {
   const [services, setServices] = useState<ServiceItem[]>(() => {
     try {
       const saved = localStorage.getItem('huzada_booking_services');
-      return saved ? JSON.parse(saved) : DEFAULT_SERVICES;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.map((item: any) => ({
+          ...item,
+          images: Array.isArray(item.images) && item.images.length > 0
+            ? item.images
+            : (item.image ? [item.image] : [DEFAULT_SERVICES[0].images[0]]),
+        }));
+      }
+      return DEFAULT_SERVICES;
     } catch {
       return DEFAULT_SERVICES;
     }
@@ -174,7 +147,7 @@ export function Admin({ onLogout }: AdminProps = {}) {
     price: number;
     duration: number;
     description: string;
-    image: string;
+    images: string[];
     badge: string;
   }>({
     name: '',
@@ -183,7 +156,7 @@ export function Admin({ onLogout }: AdminProps = {}) {
     price: 60,
     duration: 30,
     description: '',
-    image: DEFAULT_SERVICES[0].image,
+    images: [],
     badge: '',
   });
 
@@ -225,10 +198,78 @@ export function Admin({ onLogout }: AdminProps = {}) {
         }
       } else {
         // Fallback to sample appointments if database is freshly deployed
-        setAppointments(prev => (prev.length > 0 ? prev : FALLBACK_APPOINTMENTS));
+        setAppointments(prev => (prev.length > 0 ? prev : [
+          {
+            id: 'APT-9104',
+            customerName: 'Ayesha Khan',
+            customerPhone: '03008765432',
+            serviceName: 'Teeth Whitening & Cleanse',
+            date: '2026-10-24',
+            time: '14:30',
+            notes: 'First time visit. Prefers afternoon slot.',
+            status: 'pending',
+            createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+          },
+          {
+            id: 'APT-8921',
+            customerName: 'Zainab Fatima',
+            customerPhone: '03219876543',
+            serviceName: 'Comprehensive Health Consultation',
+            date: '2026-10-23',
+            time: '11:00',
+            notes: 'Follow-up consultation. Reports attached.',
+            status: 'confirmed',
+            createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
+          },
+          {
+            id: 'APT-8715',
+            customerName: 'Bilal Ahmed',
+            customerPhone: '03335551234',
+            serviceName: 'Executive Wellness Therapy',
+            date: '2026-10-22',
+            time: '16:00',
+            notes: 'Confirmed and payment handled in advance.',
+            status: 'completed',
+            createdAt: new Date(Date.now() - 1000 * 60 * 600).toISOString(),
+          },
+        ]));
       }
     } catch {
-      setAppointments(prev => (prev.length > 0 ? prev : FALLBACK_APPOINTMENTS));
+      setAppointments(prev => (prev.length > 0 ? prev : [
+        {
+          id: 'APT-9104',
+          customerName: 'Ayesha Khan',
+          customerPhone: '03008765432',
+          serviceName: 'Teeth Whitening & Cleanse',
+          date: '2026-10-24',
+          time: '14:30',
+          notes: 'First time visit. Prefers afternoon slot.',
+          status: 'pending',
+          createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+        },
+        {
+          id: 'APT-8921',
+          customerName: 'Zainab Fatima',
+          customerPhone: '03219876543',
+          serviceName: 'Comprehensive Health Consultation',
+          date: '2026-10-23',
+          time: '11:00',
+          notes: 'Follow-up consultation. Reports attached.',
+          status: 'confirmed',
+          createdAt: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
+        },
+        {
+          id: 'APT-8715',
+          customerName: 'Bilal Ahmed',
+          customerPhone: '03335551234',
+          serviceName: 'Executive Wellness Therapy',
+          date: '2026-10-22',
+          time: '16:00',
+          notes: 'Confirmed and payment handled in advance.',
+          status: 'completed',
+          createdAt: new Date(Date.now() - 1000 * 60 * 600).toISOString(),
+        },
+      ]));
     } finally {
       setIsSyncing(false);
     }
@@ -262,7 +303,7 @@ export function Admin({ onLogout }: AdminProps = {}) {
     setUploadError(null);
 
     const formData = new FormData();
-    formData.append('file', files[0]);
+    Array.from(files).forEach(file => formData.append('file', file));
 
     try {
       const res = await fetch('/api/upload', {
@@ -271,8 +312,16 @@ export function Admin({ onLogout }: AdminProps = {}) {
         body: formData,
       });
       const data = (await res.json()) as any;
-      if (data?.success && data?.imageUrl) {
-        setServiceForm(prev => ({ ...prev, image: data.imageUrl }));
+      if (data?.imageUrls && Array.isArray(data.imageUrls) && data.imageUrls.length > 0) {
+        setServiceForm(prev => ({
+          ...prev,
+          images: [...prev.images, ...data.imageUrls],
+        }));
+      } else if (data?.imageUrl) {
+        setServiceForm(prev => ({
+          ...prev,
+          images: [...prev.images, data.imageUrl],
+        }));
       } else {
         setUploadError(data?.error || 'Upload failed. You can paste an image URL directly.');
       }
@@ -292,7 +341,7 @@ export function Admin({ onLogout }: AdminProps = {}) {
       price: 60,
       duration: 30,
       description: '',
-      image: DEFAULT_SERVICES[0].image,
+      images: [],
       badge: '',
     });
     setServiceError(null);
@@ -306,6 +355,10 @@ export function Admin({ onLogout }: AdminProps = {}) {
     const standardCategories = ['Consultation', 'Dental Care', 'Wellness', 'Clinical', 'Grooming'];
     const isCustom = !standardCategories.includes(service.category);
 
+    const initialImages = Array.isArray(service.images) && service.images.length > 0
+      ? service.images
+      : ((service as any).image ? [(service as any).image] : []);
+
     setServiceForm({
       name: service.name,
       category: isCustom ? 'Custom' : service.category,
@@ -313,12 +366,12 @@ export function Admin({ onLogout }: AdminProps = {}) {
       price: service.price,
       duration: service.duration,
       description: service.description,
-      image: service.image,
+      images: initialImages,
       badge: service.badge || '',
     });
     setServiceError(null);
     setUploadError(null);
-    setCustomImageUrl(service.image);
+    setCustomImageUrl('');
     setIsServiceModalOpen(true);
   };
 
@@ -336,6 +389,10 @@ export function Admin({ onLogout }: AdminProps = {}) {
           ? serviceForm.customCategory.trim() || 'General'
           : serviceForm.category;
 
+      const finalImages = serviceForm.images.length > 0
+        ? serviceForm.images
+        : [DEFAULT_SERVICES[0].images[0]];
+
       const newService: ServiceItem = {
         id: editingService ? editingService.id : `srv-${Date.now().toString().slice(-6)}`,
         name: serviceForm.name.trim(),
@@ -343,7 +400,7 @@ export function Admin({ onLogout }: AdminProps = {}) {
         price: Number(serviceForm.price) || 0,
         duration: Number(serviceForm.duration) || 30,
         description: serviceForm.description.trim(),
-        image: serviceForm.image || DEFAULT_SERVICES[0].image,
+        images: finalImages,
         badge: serviceForm.badge.trim() || undefined,
       };
 
@@ -734,91 +791,104 @@ export function Admin({ onLogout }: AdminProps = {}) {
                   </button>
                 </div>
               ) : (
-                services.map(item => (
-                  <div
-                    key={item.id}
-                    className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-zinc-50/50 transition-colors"
-                  >
-                    {/* Item info */}
-                    <div className="flex items-start sm:items-center gap-3.5 min-w-0">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        referrerPolicy="no-referrer"
-                        loading="lazy"
-                        className="w-14 h-14 aspect-square rounded-lg object-cover shrink-0 border border-neutral-200 bg-zinc-100"
-                        onError={(e: any) => {
-                          e.target.src = DEFAULT_SERVICES[0].image;
-                        }}
-                      />
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="text-xs font-semibold text-zinc-900 truncate">{item.name}</h4>
-                          {item.badge && (
-                            <span className="bg-zinc-100 text-zinc-700 text-[10px] font-medium px-1.5 py-0.2 rounded shrink-0">
-                              {item.badge}
+                services.map(item => {
+                  const primaryImg = (item.images && item.images[0]) || (item as any).image || DEFAULT_SERVICES[0].images[0];
+                  return (
+                    <div
+                      key={item.id}
+                      className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-zinc-50/50 transition-colors"
+                    >
+                      {/* Item info */}
+                      <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+                        <div className="relative shrink-0">
+                          <img
+                            src={primaryImg}
+                            alt={item.name}
+                            referrerPolicy="no-referrer"
+                            loading="lazy"
+                            className="w-14 h-14 aspect-square rounded-lg object-cover border border-neutral-200 bg-zinc-100"
+                            onError={(e: any) => {
+                              e.target.src = DEFAULT_SERVICES[0].images[0];
+                            }}
+                          />
+                          {item.images && item.images.length > 1 && (
+                            <span
+                              title={`${item.images.length} photos`}
+                              className="absolute -bottom-1 -right-1 bg-zinc-900 text-white font-mono text-[9px] font-semibold px-1 py-0.2 rounded-full border border-white shadow-xs"
+                            >
+                              +{item.images.length - 1}
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-zinc-500 font-mono mt-0.5 flex items-center gap-1.5">
-                          <span>{item.category}</span>
-                          <span>·</span>
-                          <span className="font-semibold text-zinc-800">${item.price}</span>
-                          <span>·</span>
-                          <span className="flex items-center gap-0.5">
-                            <Clock className="w-3 h-3 text-zinc-400" />
-                            {item.duration} mins
-                          </span>
-                        </p>
-                        {item.description && (
-                          <p className="text-[11px] text-zinc-400 line-clamp-1 max-w-sm mt-0.5">
-                            {item.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Controls & Actions */}
-                    <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-zinc-100">
-                      {/* Edit & Delete actions */}
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => handleOpenEditService(item)}
-                          className="px-2.5 py-1 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-colors cursor-pointer flex items-center gap-1 text-xs font-medium"
-                          title="Edit Service"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                          <span>Edit</span>
-                        </button>
-
-                        {deleteConfirmId === item.id ? (
-                          <div className="flex items-center gap-1 bg-red-50 p-1 rounded-lg border border-red-200">
-                            <button
-                              onClick={() => handleDeleteService(item.id)}
-                              className="text-red-700 font-semibold text-[11px] px-1.5 py-0.5 hover:underline cursor-pointer"
-                            >
-                              Confirm
-                            </button>
-                            <button
-                              onClick={() => setDeleteConfirmId(null)}
-                              className="text-zinc-500 text-[11px] px-1 hover:text-zinc-800 cursor-pointer"
-                            >
-                              Cancel
-                            </button>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="text-xs font-semibold text-zinc-900 truncate">{item.name}</h4>
+                            {item.badge && (
+                              <span className="bg-zinc-100 text-zinc-700 text-[10px] font-medium px-1.5 py-0.2 rounded shrink-0">
+                                {item.badge}
+                              </span>
+                            )}
                           </div>
-                        ) : (
+                          <p className="text-[11px] text-zinc-500 font-mono mt-0.5 flex items-center gap-1.5">
+                            <span>{item.category}</span>
+                            <span>·</span>
+                            <span className="font-semibold text-zinc-800">${item.price}</span>
+                            <span>·</span>
+                            <span className="flex items-center gap-0.5">
+                              <Clock className="w-3 h-3 text-zinc-400" />
+                              {item.duration} mins
+                            </span>
+                          </p>
+                          {item.description && (
+                            <p className="text-[11px] text-zinc-400 line-clamp-1 max-w-sm mt-0.5">
+                              {item.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Controls & Actions */}
+                      <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-zinc-100">
+                        {/* Edit & Delete actions */}
+                        <div className="flex items-center gap-1">
                           <button
-                            onClick={() => setDeleteConfirmId(item.id)}
-                            className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                            title="Delete Service"
+                            onClick={() => handleOpenEditService(item)}
+                            className="px-2.5 py-1 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-lg transition-colors cursor-pointer flex items-center gap-1 text-xs font-medium"
+                            title="Edit Service"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Pencil className="w-3.5 h-3.5" />
+                            <span>Edit</span>
                           </button>
-                        )}
+
+                          {deleteConfirmId === item.id ? (
+                            <div className="flex items-center gap-1 bg-red-50 p-1 rounded-lg border border-red-200">
+                              <button
+                                onClick={() => handleDeleteService(item.id)}
+                                className="text-red-700 font-semibold text-[11px] px-1.5 py-0.5 hover:underline cursor-pointer"
+                              >
+                                Confirm
+                              </button>
+                              <button
+                                onClick={() => setDeleteConfirmId(null)}
+                                className="text-zinc-500 text-[11px] px-1 hover:text-zinc-800 cursor-pointer"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => setDeleteConfirmId(item.id)}
+                              className="p-1.5 text-zinc-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                              title="Delete Service"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           )}
@@ -1030,7 +1100,7 @@ export function Admin({ onLogout }: AdminProps = {}) {
         </div>
       </div>
 
-      {/* SERVICE MODAL (Add / Edit) - 1:1 with Catalog Product Modal */}
+      {/* SERVICE MODAL (Add / Edit) - Multi-Image Support */}
       {isServiceModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl border border-zinc-200 shadow-2xl max-w-lg w-full p-6 space-y-5 my-8">
@@ -1040,7 +1110,7 @@ export function Admin({ onLogout }: AdminProps = {}) {
                   {editingService ? 'Edit Booking Service' : 'Add New Service to Catalog'}
                 </h3>
                 <p className="text-[11px] text-zinc-500 mt-0.5">
-                  Configure service details, pricing, duration, and cover media.
+                  Configure service details, pricing, duration, and cover media assets.
                 </p>
               </div>
               <button
@@ -1196,11 +1266,16 @@ export function Admin({ onLogout }: AdminProps = {}) {
                 />
               </div>
 
-              {/* Media Asset Section */}
+              {/* Media Asset Section with Multi-Image Support */}
               <div className="pt-1">
-                <label className="block text-xs font-semibold text-zinc-900 mb-1.5">
-                  Service Cover Media <span className="text-red-500">*</span>
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold text-zinc-900">
+                    Service Media Assets <span className="text-red-500">*</span>
+                  </label>
+                  <span className="text-[11px] font-mono text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded-full border border-zinc-200">
+                    {serviceForm.images.length} asset{serviceForm.images.length === 1 ? '' : 's'}
+                  </span>
+                </div>
 
                 {/* Preset image suggestions */}
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-2 no-scrollbar">
@@ -1211,21 +1286,29 @@ export function Admin({ onLogout }: AdminProps = {}) {
                     <button
                       key={preset.label}
                       type="button"
-                      onClick={() => setServiceForm({ ...serviceForm, image: preset.url })}
+                      onClick={() => {
+                        if (!serviceForm.images.includes(preset.url)) {
+                          setServiceForm(prev => ({
+                            ...prev,
+                            images: [...prev.images, preset.url],
+                          }));
+                        }
+                      }}
                       className="px-2 py-0.5 rounded text-[10px] font-medium bg-zinc-100 hover:bg-zinc-200 text-zinc-700 shrink-0 transition-colors cursor-pointer"
                     >
-                      {preset.label}
+                      +{preset.label}
                     </button>
                   ))}
                 </div>
 
                 {/* Upload or URL input */}
-                <div className="mt-2 space-y-2">
+                <div className="mt-1 space-y-2">
                   <div className="flex items-center gap-2">
                     <input
                       type="file"
                       ref={fileInputRef}
                       accept="image/*"
+                      multiple
                       onChange={e => handleFileUpload(e.target.files)}
                       className="hidden"
                     />
@@ -1238,25 +1321,54 @@ export function Admin({ onLogout }: AdminProps = {}) {
                       {isUploading ? (
                         <>
                           <LoaderCircle className="w-3.5 h-3.5 animate-spin" />
-                          <span>Uploading Asset...</span>
+                          <span>Uploading Assets...</span>
                         </>
                       ) : (
                         <>
                           <Upload className="w-3.5 h-3.5" />
-                          <span>Upload File</span>
+                          <span>Upload Images</span>
                         </>
                       )}
                     </button>
 
-                    <div className="relative flex-1">
-                      <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
-                      <input
-                        type="url"
-                        placeholder="Or paste external image URL..."
-                        value={serviceForm.image}
-                        onChange={e => setServiceForm({ ...serviceForm, image: e.target.value })}
-                        className="w-full bg-white border border-zinc-200 rounded-lg pl-9 pr-3 py-1.5 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900"
-                      />
+                    <div className="relative flex-1 flex items-center gap-1.5">
+                      <div className="relative flex-1">
+                        <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400" />
+                        <input
+                          type="url"
+                          placeholder="Or paste external image URL..."
+                          value={customImageUrl}
+                          onChange={e => setCustomImageUrl(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (customImageUrl.trim()) {
+                                setServiceForm(prev => ({
+                                  ...prev,
+                                  images: [...prev.images, customImageUrl.trim()],
+                                }));
+                                setCustomImageUrl('');
+                              }
+                            }
+                          }}
+                          className="w-full bg-white border border-zinc-200 rounded-lg pl-9 pr-3 py-1.5 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (customImageUrl.trim()) {
+                            setServiceForm(prev => ({
+                              ...prev,
+                              images: [...prev.images, customImageUrl.trim()],
+                            }));
+                            setCustomImageUrl('');
+                          }
+                        }}
+                        className="bg-zinc-900 hover:bg-zinc-800 text-white text-xs px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer shrink-0"
+                      >
+                        Add
+                      </button>
                     </div>
                   </div>
 
@@ -1266,24 +1378,44 @@ export function Admin({ onLogout }: AdminProps = {}) {
                     </p>
                   )}
 
-                  {/* Thumbnail Preview */}
-                  {serviceForm.image && (
-                    <div className="flex items-center gap-3 p-2 bg-zinc-50 rounded-lg border border-zinc-200">
-                      <img
-                        src={serviceForm.image}
-                        alt="Preview"
-                        className="w-12 h-12 rounded object-cover border border-zinc-200 bg-white"
-                        onError={(e: any) => {
-                          e.target.src = DEFAULT_SERVICES[0].image;
-                        }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <span className="text-[10px] font-mono text-zinc-400 block uppercase">
-                          Active Preview
-                        </span>
-                        <span className="text-xs text-zinc-600 truncate block font-mono">
-                          {serviceForm.image}
-                        </span>
+                  {/* Horizontally scrollable mini-gallery of uploaded images */}
+                  {serviceForm.images && serviceForm.images.length > 0 && (
+                    <div className="pt-2">
+                      <div className="flex items-center gap-2.5 overflow-x-auto p-2 bg-zinc-50 rounded-xl border border-zinc-200 no-scrollbar">
+                        {serviceForm.images.map((imgUrl, idx) => (
+                          <div
+                            key={`${imgUrl}-${idx}`}
+                            className="relative shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-zinc-200 bg-white group shadow-2xs"
+                          >
+                            <img
+                              src={imgUrl}
+                              alt={`Upload ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                              onError={(e: any) => {
+                                e.target.src = DEFAULT_SERVICES[0].images[0];
+                              }}
+                            />
+                            {idx === 0 && (
+                              <span className="absolute bottom-1 left-1 bg-zinc-900/90 text-white font-mono text-[8px] px-1 py-0.2 rounded font-semibold">
+                                Primary
+                              </span>
+                            )}
+                            {/* Absolute-positioned "X" remove button */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setServiceForm(prev => ({
+                                  ...prev,
+                                  images: prev.images.filter((_, i) => i !== idx),
+                                }));
+                              }}
+                              className="absolute top-1 right-1 w-4 h-4 rounded-full bg-black/75 hover:bg-black text-white flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+                              title="Delete this image"
+                            >
+                              <X className="w-2.5 h-2.5" />
+                            </button>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}

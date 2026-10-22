@@ -25,7 +25,7 @@ const FALLBACK_SERVICES = [
     duration: 45,
     duration_minutes: 45,
     description: 'Complete ultrasonic plaque removal, enamel polish, and brightening procedure.',
-    image: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80',
+    images: ['https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=800&q=80'],
     badge: 'Popular',
   },
   {
@@ -36,7 +36,7 @@ const FALLBACK_SERVICES = [
     duration: 30,
     duration_minutes: 30,
     description: 'In-depth one-on-one session with our senior clinical specialist.',
-    image: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=800&q=80',
+    images: ['https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=800&q=80'],
     badge: 'Essential',
   },
   {
@@ -47,7 +47,7 @@ const FALLBACK_SERVICES = [
     duration: 60,
     duration_minutes: 60,
     description: 'Deep therapeutic revitalization and stress-relief treatment session.',
-    image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&q=80',
+    images: ['https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=800&q=80'],
     badge: 'Premium',
   },
   {
@@ -58,7 +58,7 @@ const FALLBACK_SERVICES = [
     duration: 40,
     duration_minutes: 40,
     description: 'Advanced diagnostic screening and personalized dermatological care plan.',
-    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80',
+    images: ['https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80'],
     badge: 'Specialist',
   },
 ];
@@ -72,6 +72,9 @@ function PublicBookingPortal() {
         const parsed = JSON.parse(saved);
         return parsed.map((s: any) => ({
           ...s,
+          images: Array.isArray(s.images) && s.images.length > 0
+            ? s.images
+            : (s.image ? [s.image] : [FALLBACK_SERVICES[0].images[0]]),
           duration_minutes: s.duration || s.duration_minutes || 30,
         }));
       }
@@ -90,6 +93,9 @@ function PublicBookingPortal() {
           setServices(
             data.services.map((s: any) => ({
               ...s,
+              images: Array.isArray(s.images) && s.images.length > 0
+                ? s.images
+                : (s.image ? [s.image] : [FALLBACK_SERVICES[0].images[0]]),
               duration_minutes: s.duration || s.duration_minutes || 30,
             }))
           );
@@ -158,65 +164,73 @@ function PublicBookingPortal() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map(srv => (
-            <div
-              key={srv.id}
-              className="bg-white rounded-2xl border border-zinc-200 overflow-hidden shadow-2xs hover:shadow-md hover:border-zinc-300 transition-all flex flex-col group"
-            >
-              {/* Image Banner */}
-              <div className="relative aspect-video bg-zinc-100 overflow-hidden">
-                <img
-                  src={srv.image || FALLBACK_SERVICES[0].image}
-                  alt={srv.name}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  onError={(e: any) => {
-                    e.target.src = FALLBACK_SERVICES[0].image;
-                  }}
-                />
-                {srv.badge && (
-                  <span className="absolute top-3 right-3 bg-zinc-900/90 backdrop-blur-xs text-white text-[10px] font-semibold px-2 py-0.5 rounded-full border border-white/20 shadow-xs">
-                    {srv.badge}
-                  </span>
-                )}
-                <span className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-xs text-zinc-800 text-[11px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200">
-                  {srv.category}
-                </span>
-              </div>
-
-              {/* Service Details */}
-              <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <h4 className="font-bold text-sm text-zinc-900 group-hover:text-black transition-colors leading-snug">
-                      {srv.name}
-                    </h4>
-                    <span className="font-mono font-bold text-sm text-zinc-900 shrink-0">
-                      ${srv.price}
+          {services.map(srv => {
+            const primaryThumbnail = (srv.images && srv.images[0]) || srv.image || FALLBACK_SERVICES[0].images[0];
+            return (
+              <div
+                key={srv.id}
+                className="bg-white rounded-2xl border border-zinc-200 overflow-hidden shadow-2xs hover:shadow-md hover:border-zinc-300 transition-all flex flex-col group"
+              >
+                {/* Image Banner */}
+                <div className="relative aspect-video bg-zinc-100 overflow-hidden">
+                  <img
+                    src={primaryThumbnail}
+                    alt={srv.name}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    onError={(e: any) => {
+                      e.target.src = FALLBACK_SERVICES[0].images[0];
+                    }}
+                  />
+                  {srv.badge && (
+                    <span className="absolute top-3 right-3 bg-zinc-900/90 backdrop-blur-xs text-white text-[10px] font-semibold px-2 py-0.5 rounded-full border border-white/20 shadow-xs">
+                      {srv.badge}
                     </span>
-                  </div>
-
-                  <p className="text-xs text-zinc-500 line-clamp-2 leading-relaxed">
-                    {srv.description || 'Professional appointment session tailored to your schedule.'}
-                  </p>
-
-                  <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 font-mono pt-1">
-                    <Clock className="w-3.5 h-3.5 text-zinc-400" />
-                    <span>{srv.duration_minutes || srv.duration || 30} Minutes Session</span>
-                  </div>
+                  )}
+                  <span className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-xs text-zinc-800 text-[11px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200">
+                    {srv.category}
+                  </span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setSelectedService(srv)}
-                  className="w-full bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-xs font-sans"
-                >
-                  <span>Book Appointment</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                </button>
+                {/* Service Details */}
+                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <h4 className="font-bold text-sm text-zinc-900 group-hover:text-black transition-colors leading-snug">
+                        {srv.name}
+                      </h4>
+                      <span className="font-mono font-bold text-sm text-zinc-900 shrink-0">
+                        ${srv.price}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-zinc-500 line-clamp-2 leading-relaxed">
+                      {srv.description || 'Professional appointment session tailored to your schedule.'}
+                    </p>
+
+                    <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 font-mono pt-1">
+                      <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                      <span>{srv.duration_minutes || srv.duration || 30} Minutes Session</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelectedService({
+                        ...srv,
+                        image: primaryThumbnail,
+                      })
+                    }
+                    className="w-full bg-zinc-950 hover:bg-zinc-800 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-xs font-sans"
+                  >
+                    <span>Book Appointment</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </main>
 
