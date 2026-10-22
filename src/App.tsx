@@ -9,7 +9,10 @@ import {
   ExternalLink,
   Phone,
   CheckCircle2,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Maximize2
 } from 'lucide-react';
 import { Admin } from './pages/Admin';
 import { AdminLogin } from './components/AdminLogin';
@@ -65,6 +68,9 @@ const FALLBACK_SERVICES = [
 
 function PublicBookingPortal() {
   const [selectedService, setSelectedService] = useState<any>(null);
+  const [lightboxItem, setLightboxItem] = useState<any | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
+
   const [services, setServices] = useState<any[]>(() => {
     try {
       const saved = localStorage.getItem('huzada_booking_services');
@@ -103,6 +109,36 @@ function PublicBookingPortal() {
       })
       .catch(() => {});
   }, []);
+
+  // Keyboard navigation for Lightbox
+  useEffect(() => {
+    if (!lightboxItem) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setLightboxItem(null);
+      } else if (e.key === 'ArrowLeft' && lightboxItem.images?.length > 1) {
+        setCurrentImageIndex(prev =>
+          prev === 0 ? lightboxItem.images.length - 1 : prev - 1
+        );
+      } else if (e.key === 'ArrowRight' && lightboxItem.images?.length > 1) {
+        setCurrentImageIndex(prev =>
+          prev === lightboxItem.images.length - 1 ? 0 : prev + 1
+        );
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [lightboxItem]);
+
+  const handleOpenLightbox = (srv: any) => {
+    const imgs = Array.isArray(srv.images) && srv.images.length > 0
+      ? srv.images
+      : (srv.image ? [srv.image] : [FALLBACK_SERVICES[0].images[0]]);
+    setLightboxItem({ ...srv, images: imgs });
+    setCurrentImageIndex(0);
+  };
 
   return (
     <div className="min-h-screen bg-zinc-100/60 font-sans text-zinc-900 flex flex-col selection:bg-zinc-900 selection:text-white">
@@ -171,8 +207,12 @@ function PublicBookingPortal() {
                 key={srv.id}
                 className="bg-white rounded-2xl border border-zinc-200 overflow-hidden shadow-2xs hover:shadow-md hover:border-zinc-300 transition-all flex flex-col group"
               >
-                {/* Image Banner */}
-                <div className="relative aspect-video bg-zinc-100 overflow-hidden">
+                {/* Image Banner - Click to trigger Lightbox */}
+                <div
+                  onClick={() => handleOpenLightbox(srv)}
+                  className="relative aspect-video bg-zinc-100 overflow-hidden cursor-pointer"
+                  title="Click to view photos in full-screen gallery"
+                >
                   <img
                     src={primaryThumbnail}
                     alt={srv.name}
@@ -183,13 +223,27 @@ function PublicBookingPortal() {
                     }}
                   />
                   {srv.badge && (
-                    <span className="absolute top-3 right-3 bg-zinc-900/90 backdrop-blur-xs text-white text-[10px] font-semibold px-2 py-0.5 rounded-full border border-white/20 shadow-xs">
+                    <span className="absolute top-3 right-3 bg-zinc-900/90 backdrop-blur-xs text-white text-[10px] font-semibold px-2 py-0.5 rounded-full border border-white/20 shadow-xs z-10">
                       {srv.badge}
                     </span>
                   )}
-                  <span className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-xs text-zinc-800 text-[11px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200">
+                  <span className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-xs text-zinc-800 text-[11px] font-mono font-medium px-2 py-0.5 rounded-md border border-zinc-200 z-10">
                     {srv.category}
                   </span>
+
+                  {/* Multi-image indicator overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-950/80 text-white text-[11px] font-medium px-2.5 py-1 rounded-full backdrop-blur-xs flex items-center gap-1.5 shadow-xs">
+                      <Maximize2 className="w-3 h-3" />
+                      <span>View Gallery {srv.images && srv.images.length > 1 ? `(${srv.images.length})` : ''}</span>
+                    </span>
+                  </div>
+
+                  {srv.images && srv.images.length > 1 && (
+                    <span className="absolute bottom-3 right-3 bg-zinc-900/80 backdrop-blur-xs text-white text-[10px] font-mono px-2 py-0.5 rounded-md border border-white/20 z-10 shadow-xs">
+                      +{srv.images.length - 1} photos
+                    </span>
+                  )}
                 </div>
 
                 {/* Service Details */}
@@ -233,6 +287,119 @@ function PublicBookingPortal() {
           })}
         </div>
       </main>
+
+      {/* High-Fidelity Interactive Lightbox Overlay */}
+      {lightboxItem && (
+        <div
+          className="fixed inset-0 z-[100] bg-zinc-950/90 backdrop-blur-md flex flex-col items-center justify-between p-4 sm:p-6 select-none animate-in fade-in duration-200"
+          onClick={() => setLightboxItem(null)}
+        >
+          {/* Top Bar */}
+          <div
+            className="w-full max-w-6xl flex items-center justify-between text-white z-10"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="min-w-0">
+                <h3 className="font-bold text-sm sm:text-base text-white truncate">
+                  {lightboxItem.name}
+                </h3>
+                <p className="text-xs text-zinc-400 font-mono mt-0.5">
+                  {lightboxItem.category} · ${lightboxItem.price} · {lightboxItem.duration_minutes || lightboxItem.duration || 30} mins
+                </p>
+              </div>
+            </div>
+
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setLightboxItem(null)}
+              className="w-10 h-10 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/80 text-zinc-300 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              title="Close gallery (Esc)"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Centered Image Stage */}
+          <div
+            className="relative flex-1 w-full max-w-6xl flex items-center justify-center my-2 sm:my-4"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Left navigation arrow */}
+            {lightboxItem.images && lightboxItem.images.length > 1 && (
+              <button
+                type="button"
+                onClick={e => {
+                  e.stopPropagation();
+                  setCurrentImageIndex(prev =>
+                    prev === 0 ? lightboxItem.images.length - 1 : prev - 1
+                  );
+                }}
+                className="absolute left-2 sm:left-4 z-20 w-11 h-11 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/80 text-white flex items-center justify-center transition-all cursor-pointer shadow-xl hover:scale-105"
+                title="Previous image (Left Arrow)"
+              >
+                <ChevronLeft className="w-6 h-6" />
+              </button>
+            )}
+
+            {/* Scaled Image */}
+            <div className="relative max-h-[72vh] max-w-full flex items-center justify-center overflow-hidden rounded-2xl border border-zinc-800/80 bg-black/40 shadow-2xl">
+              <img
+                src={lightboxItem.images[currentImageIndex] || lightboxItem.images[0]}
+                alt={`${lightboxItem.name} photo ${currentImageIndex + 1}`}
+                className="max-h-[72vh] max-w-[85vw] sm:max-w-4xl object-contain rounded-xl select-none"
+              />
+            </div>
+
+            {/* Right navigation arrow */}
+            {lightboxItem.images && lightboxItem.images.length > 1 && (
+              <button
+                type="button"
+                onClick={e => {
+                  e.stopPropagation();
+                  setCurrentImageIndex(prev =>
+                    prev === lightboxItem.images.length - 1 ? 0 : prev + 1
+                  );
+                }}
+                className="absolute right-2 sm:right-4 z-20 w-11 h-11 rounded-full bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-700/80 text-white flex items-center justify-center transition-all cursor-pointer shadow-xl hover:scale-105"
+                title="Next image (Right Arrow)"
+              >
+                <ChevronRight className="w-6 h-6" />
+              </button>
+            )}
+          </div>
+
+          {/* Bottom Bar: Thumbnails & Counter */}
+          <div
+            className="w-full max-w-6xl flex flex-col items-center gap-2.5 z-10"
+            onClick={e => e.stopPropagation()}
+          >
+            {lightboxItem.images && lightboxItem.images.length > 1 && (
+              <div className="flex items-center gap-2 overflow-x-auto max-w-md py-1 px-2 no-scrollbar">
+                {lightboxItem.images.map((img: string, i: number) => (
+                  <button
+                    key={`${img}-${i}`}
+                    type="button"
+                    onClick={() => setCurrentImageIndex(i)}
+                    className={`w-12 h-12 rounded-lg overflow-hidden border-2 transition-all cursor-pointer shrink-0 ${
+                      i === currentImageIndex
+                        ? 'border-white scale-105 ring-2 ring-white/30'
+                        : 'border-zinc-800 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="bg-zinc-900/90 border border-white/10 px-3.5 py-1 rounded-full text-xs font-mono text-zinc-300">
+              {currentImageIndex + 1} / {lightboxItem.images?.length || 1}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Booking Form Modal Overlay */}
       {selectedService && (
