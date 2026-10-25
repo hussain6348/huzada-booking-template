@@ -11,6 +11,7 @@ dist-ssr/
 .env.local
 
 # Compiled TypeScript Junk
+functions/*.js
 functions/api/*.js
 functions/api/**/*.js
 src/**/*.js

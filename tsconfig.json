@@ -6,7 +6,8 @@
     "skipLibCheck": true,
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
-    "strict": true
+    "strict": true,
+    "noEmit": true
   },
   "include": ["src", "functions"]
 }
