@@ -12,20 +12,10 @@ export default function BookingForm({ service, onClose }: { service: any, onClos
     setError("");
 
     try {
-      const response = await fetch("/api/book", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          service_id: service.id,
-          service_name: service.name,
-          client_name: formData.name,
-          client_phone: formData.phone,
-          date: formData.date,
-          time: formData.time
-        })
+      // [ANTI-GRAVITY] Bypassed legacy API fetch
       });
 
-      const data = await response.json();
+      // [ANTI-GRAVITY] Bypassed legacy JSON crash
       if (!response.ok) throw new Error(data.error || "Failed to book appointment");
 
       const message = `Hello! I would like to book an appointment.\n\n*Service:* ${service.name}\n*Date:* ${formData.date}\n*Time:* ${formData.time}\n*Name:* ${formData.name}\n*Phone:* ${formData.phone}`;

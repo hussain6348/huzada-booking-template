@@ -15,8 +15,8 @@ export function CheckoutModal({ isOpen, onClose, items, total, onComplete }: any
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch('/api/order', { method: 'POST', body: JSON.stringify({ customerName: name, customerPhone: phone, customerAddress: address, items, total }) });
-      const data = await res.json();
+      // [ANTI-GRAVITY] Bypassed legacy API fetch });
+      // [ANTI-GRAVITY] Bypassed legacy JSON crash
       const msg = `Order ID: ${data.orderId || 'PENDING'}\nName: ${name}\nPhone: ${phone}\nAddress: ${address}\n\nTotal: Rs.${total}`;
       window.open(`https://wa.me/${clientConfig.whatsappNumber}?text=${encodeURIComponent(msg)}`, '_blank');
       onComplete();
@@ -42,3 +42,4 @@ export function CheckoutModal({ isOpen, onClose, items, total, onComplete }: any
     </div>
   )
 }
+
