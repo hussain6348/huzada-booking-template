@@ -40,6 +40,22 @@ export const onRequestPost = async (context: any) => {
       );
     }
 
+    if (
+      tursoUrl === "libsql://" ||
+      tursoUrl === "https://" ||
+      tursoUrl === "http://" ||
+      tursoUrl.endsWith("://")
+    ) {
+      return jsonResponse(
+        {
+          success: false,
+          error: `Database URL is incomplete ('${tursoUrl}'). Missing database hostname.`,
+          code: "DB_INVALID_URL",
+        },
+        400
+      );
+    }
+
     // 2. Validate URL protocol to prevent libSQL URL_INVALID crashes
     if (
       !tursoUrl.startsWith("libsql://") &&

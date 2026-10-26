@@ -27,17 +27,44 @@ export const onRequestGet = async (context: any) => {
   const tursoUrl = (env.TURSO_DATABASE_URL || "").trim();
   const tursoToken = (env.TURSO_AUTH_TOKEN || "").trim();
 
-  // 1. Check environment variable presence
-  if (!tursoUrl || !tursoToken) {
+  // 1. Detailed Diagnostic Check for Environment Variables
+  const missingKeys: string[] = [];
+  if (!tursoUrl) missingKeys.push("TURSO_DATABASE_URL");
+  if (!tursoToken) missingKeys.push("TURSO_AUTH_TOKEN");
+
+  if (missingKeys.length > 0) {
+    const envKeysPresent = Object.keys(env).filter(
+      (k) => !k.startsWith("CF_") && !k.startsWith("__")
+    );
     return jsonResponse({
       connected: false,
-      error: "TURSO_DATABASE_URL or TURSO_AUTH_TOKEN is not defined in Cloudflare environment",
+      error: `Missing required environment variable(s): ${missingKeys.join(", ")}.`,
+      detail:
+        envKeysPresent.length === 0
+          ? "No custom environment variables detected in this Cloudflare deployment. In Cloudflare Pages, environment variables only apply to subsequent builds. You must trigger a new deployment ('Manage deployment' -> 'Retry deployment') for added variables to activate."
+          : `Active variables detected: [${envKeysPresent.join(", ")}], but ${missingKeys.join(", ")} is missing.`,
       code: "DB_PENDING",
+      missingKeys,
       timestamp: new Date().toISOString(),
     });
   }
 
-  // 2. Validate URL protocol
+  // 2. Validate URL protocol and completeness
+  if (
+    tursoUrl === "libsql://" ||
+    tursoUrl === "https://" ||
+    tursoUrl === "http://" ||
+    tursoUrl.endsWith("://")
+  ) {
+    return jsonResponse({
+      connected: false,
+      error: `TURSO_DATABASE_URL is incomplete ('${tursoUrl}'). The database hostname was not appended.`,
+      detail: "Expected format: libsql://[db-name]-[org].turso.io. Check your n8n workflow expression for Hostname extraction.",
+      code: "DB_INVALID_URL",
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   if (
     !tursoUrl.startsWith("libsql://") &&
     !tursoUrl.startsWith("https://") &&

@@ -18,6 +18,8 @@ export const onRequestGet = async (context: any) => {
       typeof tursoUrl !== "string" ||
       typeof tursoToken !== "string" ||
       tursoUrl.trim() === "" ||
+      tursoUrl.trim() === "libsql://" ||
+      tursoUrl.trim() === "https://" ||
       tursoToken.trim() === ""
     ) {
       return new Response(JSON.stringify([]), {

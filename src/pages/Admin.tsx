@@ -142,11 +142,18 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
               <p className="font-mono bg-white/70 px-2 py-1 rounded border border-amber-200/60 inline-block">
                 {health.error}
               </p>
+              {health.detail && (
+                <p className="text-zinc-700 bg-amber-100/60 p-2 rounded border border-amber-200/60 font-mono text-[11px] leading-relaxed">
+                  💡 {health.detail}
+                </p>
+              )}
               <p className="text-zinc-600 pt-1">
-                {health.code === 'TURSO_AUTH_401'
+                {health.code === 'TURSO_AUTH_401' || health.code === 'TURSO_AUTH_ERROR'
                   ? 'The auth token provided in TURSO_AUTH_TOKEN is invalid or has expired. Generate a new token using `turso db tokens create <db-name>`.'
                   : health.code === 'DB_PENDING'
-                  ? 'TURSO_DATABASE_URL or TURSO_AUTH_TOKEN is missing in Cloudflare Pages Environment Variables.'
+                  ? 'Cloudflare Pages Environment Variables are missing or the active deployment needs to be retried (Cloudflare Dashboard > Deployments > ... > Retry deployment).'
+                  : health.code === 'DB_INVALID_URL'
+                  ? 'The TURSO_DATABASE_URL is incomplete or malformed. Ensure n8n passes the full libsql://<db>-<org>.turso.io hostname.'
                   : 'Check your database connection and network firewall settings.'}
               </p>
             </div>
