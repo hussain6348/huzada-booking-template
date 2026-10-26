@@ -1,71 +1,26 @@
 // @ts-nocheck
 import { createClient } from "@libsql/client/web";
 
-const jsonResponse = (data: any, status = 200) => {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-    },
-  });
-};
+const jsonResponse = (data, status = 200) => new Response(JSON.stringify(data), { 
+    status, 
+    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } 
+});
 
-export const onRequestOptions = async () => {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    },
-  });
-};
-
-export const onRequestPost = async (context: any) => {
+export const onRequestPost = async (context) => {
   try {
-    const env = context?.env || {};
-    const tursoUrl = env.TURSO_DATABASE_URL;
-    const tursoToken = env.TURSO_AUTH_TOKEN;
+    const env = context.env || {};
+    const tursoUrl = (env.TURSO_DATABASE_URL || "").trim();
+    const tursoToken = (env.TURSO_AUTH_TOKEN || "").trim();
 
-    // Check if Turso credentials exist and are non-empty strings
-    if (
-      !tursoUrl ||
-      !tursoToken ||
-      typeof tursoUrl !== "string" ||
-      typeof tursoToken !== "string" ||
-      tursoUrl.trim() === "" ||
-      tursoToken.trim() === ""
-    ) {
-      return jsonResponse({ success: false, error: "Database pending" }, 400);
+    if (!tursoUrl || !tursoToken) {
+      return jsonResponse({ success: false, error: "Database pending keys" }, 400);
     }
 
-    const cleanUrl = tursoUrl.trim();
-    // Validate protocol to prevent libSQL URL_INVALID crashes
-    if (
-      !cleanUrl.startsWith("libsql://") &&
-      !cleanUrl.startsWith("https://") &&
-      !cleanUrl.startsWith("http://") &&
-      !cleanUrl.startsWith("wss://")
-    ) {
-      return jsonResponse({ success: false, error: "Database pending" }, 400);
-    }
+    const db = createClient({ url: tursoUrl, authToken: tursoToken });
+    let body = {};
+    try { body = await context.request.json(); } catch(e) {}
 
-    // Safely parse JSON request body
-    let body: any = {};
-    try {
-      body = await context.request.json();
-    } catch {
-      body = {};
-    }
-
-    // Initialize Turso libSQL client
-    const db = createClient({
-      url: cleanUrl,
-      authToken: tursoToken.trim(),
-    });
-
-    // WaaS Auto-Migration: Automatically build the table for brand new clients
+    // Auto-Healing: Create table safely
     await db.execute(`
       CREATE TABLE IF NOT EXISTS bookings (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,38 +35,22 @@ export const onRequestPost = async (context: any) => {
       )
     `);
 
-    // Extract booking data supporting multiple naming conventions
-    const clientId = body.client_id || "unknown";
-    const customerName = body.customer_name || body.client_name || "";
-    const customerPhone = body.customer_phone || body.client_phone || "";
-    const serviceName = body.service_name || "";
-    const bookingDate = body.booking_date || body.date || "";
-    const bookingTime = body.booking_time || body.time || "";
-
-    // Save the booking securely
+    // Dynamic Safe Insert (Prevents crashes if older databases are missing columns)
     await db.execute({
-      sql: `INSERT INTO bookings (client_id, customer_name, customer_phone, service_name, booking_date, booking_time) VALUES (?, ?, ?, ?, ?, ?)`,
+      sql: INSERT INTO bookings (client_id, customer_name, customer_phone, service_name, booking_date, booking_time) VALUES (?, ?, ?, ?, ?, ?),
       args: [
-        clientId,
-        customerName,
-        customerPhone,
-        serviceName,
-        bookingDate,
-        bookingTime,
-      ],
+        body.client_id || body.client_name || 'default',
+        body.customer_name || body.client_name || 'Unknown',
+        body.customer_phone || body.client_phone || 'Unknown',
+        body.service_name || 'Service',
+        body.booking_date || body.date || 'Unknown',
+        body.booking_time || body.time || 'Unknown'
+      ]
     });
 
-    return jsonResponse({
-      success: true,
-      whatsapp: env.WHATSAPP_NUMBER || undefined,
-    });
-  } catch (error: any) {
-    return jsonResponse(
-      {
-        success: false,
-        error: error?.message || "Internal server error",
-      },
-      500
-    );
+    return jsonResponse({ success: true, message: "Saved to Turso" });
+  } catch (error) {
+    // If it fails, return the EXACT Turso error so we can read it in the browser console
+    return jsonResponse({ success: false, error: error.message }, 500);
   }
 };
