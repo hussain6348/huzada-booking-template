@@ -1,26 +1,77 @@
 // @ts-nocheck
 import { createClient } from "@libsql/client/web";
 
-const jsonResponse = (data, status = 200) => new Response(JSON.stringify(data), { 
-    status, 
-    headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" } 
-});
+const jsonResponse = (data: any, status = 200) => {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
+};
 
-export const onRequestPost = async (context) => {
+export const onRequestOptions = async () => {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    },
+  });
+};
+
+export const onRequestPost = async (context: any) => {
   try {
-    const env = context.env || {};
+    const env = context?.env || {};
     const tursoUrl = (env.TURSO_DATABASE_URL || "").trim();
     const tursoToken = (env.TURSO_AUTH_TOKEN || "").trim();
 
+    // 1. Guard against unconfigured or lagging environment variables
     if (!tursoUrl || !tursoToken) {
-      return jsonResponse({ success: false, error: "Database pending keys" }, 400);
+      return jsonResponse(
+        {
+          success: false,
+          error: "Database pending keys: TURSO_DATABASE_URL or TURSO_AUTH_TOKEN not set",
+          code: "DB_PENDING",
+        },
+        400
+      );
     }
 
-    const db = createClient({ url: tursoUrl, authToken: tursoToken });
-    let body = {};
-    try { body = await context.request.json(); } catch(e) {}
+    // 2. Validate URL protocol to prevent libSQL URL_INVALID crashes
+    if (
+      !tursoUrl.startsWith("libsql://") &&
+      !tursoUrl.startsWith("https://") &&
+      !tursoUrl.startsWith("http://") &&
+      !tursoUrl.startsWith("wss://")
+    ) {
+      return jsonResponse(
+        {
+          success: false,
+          error: "Invalid database URL protocol. Expected libsql:// or https://",
+          code: "DB_INVALID_URL",
+        },
+        400
+      );
+    }
 
-    // Auto-Healing: Create table safely
+    // 3. Safely parse JSON request body
+    let body: any = {};
+    try {
+      body = await context.request.json();
+    } catch {
+      body = {};
+    }
+
+    // 4. Initialize Turso libSQL client
+    const db = createClient({
+      url: tursoUrl,
+      authToken: tursoToken,
+    });
+
+    // 5. Auto-Migration: Ensure bookings table exists
     await db.execute(`
       CREATE TABLE IF NOT EXISTS bookings (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,22 +86,56 @@ export const onRequestPost = async (context) => {
       )
     `);
 
-    // Dynamic Safe Insert (Prevents crashes if older databases are missing columns)
-    await db.execute({
-      sql: INSERT INTO bookings (client_id, customer_name, customer_phone, service_name, booking_date, booking_time) VALUES (?, ?, ?, ?, ?, ?),
+    // 6. Safe parameterized insertion with fallback aliases
+    const clientId = body.client_id || body.client_name || "default";
+    const customerName = body.customer_name || body.client_name || "Unknown";
+    const customerPhone = body.customer_phone || body.client_phone || "Unknown";
+    const serviceName = body.service_name || "Service";
+    const bookingDate = body.booking_date || body.date || "Unknown";
+    const bookingTime = body.booking_time || body.time || "Unknown";
+
+    const insertResult = await db.execute({
+      sql: "INSERT INTO bookings (client_id, customer_name, customer_phone, service_name, booking_date, booking_time) VALUES (?, ?, ?, ?, ?, ?)",
       args: [
-        body.client_id || body.client_name || 'default',
-        body.customer_name || body.client_name || 'Unknown',
-        body.customer_phone || body.client_phone || 'Unknown',
-        body.service_name || 'Service',
-        body.booking_date || body.date || 'Unknown',
-        body.booking_time || body.time || 'Unknown'
-      ]
+        clientId,
+        customerName,
+        customerPhone,
+        serviceName,
+        bookingDate,
+        bookingTime,
+      ],
     });
 
-    return jsonResponse({ success: true, message: "Saved to Turso" });
-  } catch (error) {
-    // If it fails, return the EXACT Turso error so we can read it in the browser console
-    return jsonResponse({ success: false, error: error.message }, 500);
+    const bookingId = insertResult?.lastInsertRowid
+      ? String(insertResult.lastInsertRowid)
+      : undefined;
+
+    return jsonResponse({
+      success: true,
+      message: "Booking saved to Turso database",
+      bookingId,
+      whatsapp: env.WHATSAPP_NUMBER || undefined,
+    });
+  } catch (error: any) {
+    const errorMessage = error?.message || "Internal server error";
+    const isAuthError =
+      errorMessage.includes("401") ||
+      errorMessage.includes("400") ||
+      errorMessage.toLowerCase().includes("unauthorized") ||
+      errorMessage.toLowerCase().includes("jwt");
+
+    console.error("[API/BOOK ERROR]", {
+      message: errorMessage,
+      code: isAuthError ? "TURSO_AUTH_ERROR" : "TURSO_EXEC_ERROR",
+    });
+
+    return jsonResponse(
+      {
+        success: false,
+        error: errorMessage,
+        code: isAuthError ? "TURSO_AUTH_ERROR" : "TURSO_EXEC_ERROR",
+      },
+      500
+    );
   }
 };

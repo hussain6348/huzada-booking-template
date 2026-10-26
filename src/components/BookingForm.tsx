@@ -45,28 +45,79 @@ export default function BookingForm({
         }),
       });
 
-      // Bulletproof JSON parsing: handle empty or non-JSON responses gracefully
-      if (response.ok) {
-        try {
-          const text = await response.text();
-          if (text) {
-            const data = JSON.parse(text);
-            if (data?.whatsapp) {
-              targetWhatsApp = data.whatsapp;
-            }
-          }
-        } catch {
-          // Gracefully ignore parse issues without throwing
+      // Extract and parse response safely without crashing on non-JSON
+      let responseData: any = null;
+      try {
+        const text = await response.text();
+        if (text) {
+          responseData = JSON.parse(text);
         }
+      } catch {
+        responseData = null;
       }
-    } catch (err) {
-      // Catch error silently: backend / database delay must NEVER block booking
-      console.warn("Booking backend offline or pending, proceeding to WhatsApp bridge:", err);
+
+      if (response.ok) {
+        if (responseData?.whatsapp) {
+          targetWhatsApp = responseData.whatsapp;
+        }
+
+        // Persist diagnostic record for developer inspection
+        try {
+          sessionStorage.setItem(
+            "huzada_last_booking_status",
+            JSON.stringify({
+              timestamp: new Date().toISOString(),
+              ok: true,
+              status: response.status,
+              data: responseData,
+            })
+          );
+        } catch {}
+      } else {
+        // Backend returned 400 or 500 error: log clearly for developer inspection
+        console.error("[BOOKING API FAILED]", {
+          status: response.status,
+          response: responseData,
+        });
+
+        // Store failure diagnostics in sessionStorage (accessible after navigation)
+        try {
+          sessionStorage.setItem(
+            "huzada_last_booking_status",
+            JSON.stringify({
+              timestamp: new Date().toISOString(),
+              ok: false,
+              status: response.status,
+              error: responseData?.error || "Unknown server response",
+              code: responseData?.code || "HTTP_" + response.status,
+            })
+          );
+        } catch {}
+      }
+    } catch (err: any) {
+      // Network or fetch failure: record in sessionStorage and warn
+      console.warn(
+        "Booking backend offline or pending, proceeding to WhatsApp bridge:",
+        err
+      );
+
+      try {
+        sessionStorage.setItem(
+          "huzada_last_booking_status",
+          JSON.stringify({
+            timestamp: new Date().toISOString(),
+            ok: false,
+            status: 0,
+            error: err?.message || "Network request failed",
+            code: "NETWORK_ERROR",
+          })
+        );
+      } catch {}
     } finally {
+      // Indestructible WhatsApp Bridge: ALWAYS executes regardless of API status
       const message = `Hello! I would like to book an appointment.\n\n*Service:* ${service?.name || "Service"}\n*Date:* ${formData.date}\n*Time:* ${formData.time}\n*Name:* ${formData.name}\n*Phone:* ${formData.phone}`;
       const cleanPhone = (targetWhatsApp || fallbackWhatsApp).replace(/[^0-9]/g, "");
 
-      // WhatsApp redirect logic ALWAYS executes
       window.location.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
       setLoading(false);
     }
