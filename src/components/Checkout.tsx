@@ -3,16 +3,23 @@ import { useState } from 'react';
 export default function Checkout() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = async (e) => {
+  // Tell TypeScript exactly what type of event this is
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const data = {
-      name: formData.get('name'), phone: formData.get('phone'), email: formData.get('email'),
-      service: formData.get('service'), date: formData.get('date'), time: formData.get('time')
+      name: formData.get('name'), 
+      phone: formData.get('phone'), 
+      email: formData.get('email'),
+      service: formData.get('service'), 
+      date: formData.get('date'), 
+      time: formData.get('time')
     };
 
     const response = await fetch('/api/book', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify(data)
     });
 
     if (response.ok) { setIsSubmitted(true); }

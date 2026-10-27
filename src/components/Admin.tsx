@@ -1,10 +1,23 @@
 import { useEffect, useState } from 'react';
 
+// Define the exact shape of the appointment data for TypeScript
+interface Appointment {
+  name: string;
+  service: string;
+  date: string;
+  time: string;
+  phone: string;
+  email: string;
+}
+
 export default function Admin() {
-  const [appointments, setAppointments] = useState([]);
+  // Tell TypeScript this array will hold Appointment objects
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   useEffect(() => {
-    fetch('/api/appointments').then(res => res.json()).then(data => setAppointments(data.results || []));
+    fetch('/api/appointments')
+      .then(res => res.json())
+      .then(data => setAppointments(data.results || []));
   }, []);
 
   return (
