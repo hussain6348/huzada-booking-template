@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 export default function Checkout() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // Tell TypeScript exactly what type of event this is
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -29,7 +28,7 @@ export default function Checkout() {
     <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
       {isSubmitted ? (
         <div style={{ textAlign: 'center', padding: '40px 20px', backgroundColor: '#f8f9fa', borderRadius: '10px' }}>
-          <h2 style={{ color: '#28A745', marginBottom: '15px' }}>Booking Submitted! ?</h2>
+          <h2 style={{ color: '#28A745', marginBottom: '15px' }}>Booking Submitted! ✅</h2>
           <h3 style={{ fontSize: '20px', color: '#003366', fontWeight: 'bold' }}>WE WILL CONTACT YOU SOON</h3>
           <p style={{ color: '#555', marginTop: '10px' }}>Our team will reach out via phone or email shortly to confirm.</p>
         </div>
