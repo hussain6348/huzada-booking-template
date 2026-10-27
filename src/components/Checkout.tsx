@@ -6,18 +6,20 @@ export default function Checkout() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    
+    // Map the form data to EXACTLY what the API expects
     const data = {
-      name: formData.get('name'), 
-      phone: formData.get('phone'), 
-      email: formData.get('email'),
-      service: formData.get('service'), 
-      date: formData.get('date'), 
-      time: formData.get('time')
+      customer_name: formData.get('name'),
+      customer_phone: formData.get('phone'),
+      customer_email: formData.get('email'),
+      service_name: formData.get('service'),
+      booking_date: formData.get('date'),
+      booking_time: formData.get('time')
     };
 
     const response = await fetch('/api/book', {
-      method: 'POST', 
-      headers: { 'Content-Type': 'application/json' }, 
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
 
@@ -43,7 +45,7 @@ export default function Checkout() {
             <input type="date" name="date" required style={{ flex: 1, padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }} />
             <input type="time" name="time" required style={{ flex: 1, padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }} />
           </div>
-          <button type="submit" style={{ padding: '12px', backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>SUBMIT</button>
+          <button type="submit" style={{ padding: '12px', backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>Confirm & Pay Later</button>
         </form>
       )}
     </div>
