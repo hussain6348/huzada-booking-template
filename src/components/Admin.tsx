@@ -18,8 +18,8 @@ export default function Admin() {
             <p style={{ margin: '5px 0' }}><strong>Date:</strong> {appt.date} at {appt.time}</p>
             
             <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
-              <a href={	el: + (appt.phone ? appt.phone.replace(/[^0-9+]/g, '') : '')} style={{ padding: '8px 12px', backgroundColor: '#28A745', color: '#fff', borderRadius: '5px', textDecoration: 'none', fontWeight: 'bold' }}>?? Call</a>
-              <a href={mailto: + appt.email} style={{ padding: '8px 12px', backgroundColor: '#007BFF', color: '#fff', borderRadius: '5px', textDecoration: 'none', fontWeight: 'bold' }}>?? Email</a>
+              <a href={'tel:' + (appt.phone ? appt.phone.replace(/[^0-9+]/g, '') : '')} style={{ padding: '8px 12px', backgroundColor: '#28A745', color: '#fff', borderRadius: '5px', textDecoration: 'none', fontWeight: 'bold' }}>?? Call</a>
+              <a href={'mailto:' + appt.email} style={{ padding: '8px 12px', backgroundColor: '#007BFF', color: '#fff', borderRadius: '5px', textDecoration: 'none', fontWeight: 'bold' }}>?? Email</a>
             </div>
           </div>
         ))}
