@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   Database,
@@ -225,25 +225,39 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
     setDeleteConfirmId(null);
   };
 
-  const handleR2CoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleR2CoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+    
+    const currentCount = serviceForm.images?.length || 0;
+    if (currentCount + files.length > 5) {
+      alert("Maximum of 5 images allowed per service.");
+      return;
+    }
+
     try {
       const formData = new FormData();
-      for (let i = 0; i < files.length; i++) { formData.append('file', files[i]); }
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      Array.from(files).forEach(file => formData.append('file', file));
+
+      const res = await fetch('/api/upload', { 
+        method: 'POST', 
+         
+        body: formData 
+      });
+      
       if (!res.ok) throw new Error('Upload failed');
       const data = await res.json();
-      const newUrl = data.url || data.fileUrl;
-      if (newUrl) {
-        setServiceForm(prev => ({ ...prev, images: [...(prev.images || []), newUrl] }));
+      
+      if (data?.imageUrls && Array.isArray(data.imageUrls)) {
+        setServiceForm(prev => ({ ...prev, images: [...(prev.images || []), ...data.imageUrls] }));
+      } else if (data?.imageUrl) {
+        setServiceForm(prev => ({ ...prev, images: [...(prev.images || []), data.imageUrl] }));
       }
     } catch (err) {
       console.error('R2 Upload error:', err);
     }
   };
-
-  const handleSaveService = (e: React.FormEvent) => {
+const handleSaveService = (e: React.FormEvent) => {
     e.preventDefault();
     if (!serviceForm.name.trim()) {
       setServiceError('Service title is required.');
@@ -532,7 +546,7 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
                         </span>
                       </div>
                       <p className="text-xs font-medium text-zinc-600">
-                        {b.service_name || 'Custom Service'} •{' '}
+                        {b.service_name || 'Custom Service'} â€¢{' '}
                         <span className="font-mono text-zinc-500">
                           {b.customer_phone || b.client_phone || 'No Phone'}
                         </span>
@@ -656,9 +670,9 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
                         </div>
                         <p className="text-xs text-zinc-500 font-mono mt-0.5 flex items-center gap-2">
                           <span>{item.category}</span>
-                          <span>·</span>
+                          <span>Â·</span>
                           <span className="font-semibold text-zinc-900">${item.price}</span>
-                          <span>·</span>
+                          <span>Â·</span>
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3 text-zinc-400" />
                             {item.duration} mins
@@ -841,7 +855,7 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
                     onClick={() => document.getElementById('r2-file-upload')?.click()}
                   >
                     <span className="text-xs font-semibold text-zinc-800">Click to upload cover image</span>
-                    <input id="r2-file-upload" type="file" onChange={handleR2CoverUpload} accept="image/*" className="hidden" />
+                    <input id="r2-file-upload" type="file" multiple onChange={handleR2CoverUpload} accept="image/*" className="hidden" />
                   </div>
                   {serviceForm.images && serviceForm.images.length > 0 && (
                     <div className="mt-2 flex gap-2 overflow-x-auto">
@@ -1017,3 +1031,5 @@ export function Admin({ onLogout }: { onLogout?: () => void }) {
 }
 
 export default Admin;
+
+
