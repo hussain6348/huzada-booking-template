@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Calendar, Clock, User, Phone, X } from "lucide-react";
+import { Calendar, Clock, User, Phone, Mail, X } from "lucide-react";
 import { clientConfig } from "../config/client";
 
 export default function BookingForm({
@@ -12,6 +12,7 @@ export default function BookingForm({
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    email: "",
     date: "",
     time: "",
   });
@@ -38,6 +39,8 @@ export default function BookingForm({
           client_name: formData.name,
           customer_phone: formData.phone,
           client_phone: formData.phone,
+          customer_email: formData.email,
+          email: formData.email,
           booking_date: formData.date,
           date: formData.date,
           booking_time: formData.time,
@@ -45,7 +48,6 @@ export default function BookingForm({
         }),
       });
 
-      // Extract and parse response safely without crashing on non-JSON
       let responseData: any = null;
       try {
         const text = await response.text();
@@ -61,7 +63,6 @@ export default function BookingForm({
           targetWhatsApp = responseData.whatsapp;
         }
 
-        // Persist diagnostic record for developer inspection
         try {
           sessionStorage.setItem(
             "huzada_last_booking_status",
@@ -74,13 +75,11 @@ export default function BookingForm({
           );
         } catch {}
       } else {
-        // Backend returned 400 or 500 error: log clearly for developer inspection
         console.error("[BOOKING API FAILED]", {
           status: response.status,
           response: responseData,
         });
 
-        // Store failure diagnostics in sessionStorage (accessible after navigation)
         try {
           sessionStorage.setItem(
             "huzada_last_booking_status",
@@ -95,11 +94,7 @@ export default function BookingForm({
         } catch {}
       }
     } catch (err: any) {
-      // Network or fetch failure: record in sessionStorage and warn
-      console.warn(
-        "Booking backend offline or pending, proceeding to WhatsApp bridge:",
-        err
-      );
+      console.warn("Booking backend offline or pending, proceeding to WhatsApp bridge:", err);
 
       try {
         sessionStorage.setItem(
@@ -114,8 +109,7 @@ export default function BookingForm({
         );
       } catch {}
     } finally {
-      // Indestructible WhatsApp Bridge: ALWAYS executes regardless of API status
-      const message = `Hello! I would like to book an appointment.\n\n*Service:* ${service?.name || "Service"}\n*Date:* ${formData.date}\n*Time:* ${formData.time}\n*Name:* ${formData.name}\n*Phone:* ${formData.phone}`;
+      const message = `Hello! I would like to book an appointment.\n\n*Service:* ${service?.name || "Service"}\n*Date:* ${formData.date}\n*Time:* ${formData.time}\n*Name:* ${formData.name}\n*Phone:* ${formData.phone}\n*Email:* ${formData.email}`;
       const cleanPhone = (targetWhatsApp || fallbackWhatsApp).replace(/[^0-9]/g, "");
 
       window.location.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
@@ -129,7 +123,7 @@ export default function BookingForm({
         <div>
           <h2 className="text-xl font-bold text-gray-900">Checkout: {service?.name}</h2>
           <p className="text-sm text-gray-500 mt-1 font-medium">
-            Total: ${service?.price} â€¢ {service?.duration_minutes || service?.duration || 30} min
+            Total: ${service?.price} • {service?.duration_minutes || service?.duration || 30} min
           </p>
         </div>
         {onClose && (
@@ -173,6 +167,18 @@ export default function BookingForm({
               placeholder="+1 (555) 000-0000"
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <Mail size={16} className="text-gray-400" /> Email Address
+            </label>
+            <input
+              required
+              type="email"
+              placeholder="john@example.com"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
           </div>
           <div className="space-y-2">
