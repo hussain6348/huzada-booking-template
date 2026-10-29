@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Navigate, Route, Routes, Link } from 'react-router-dom';
 import {
   Calendar,
@@ -95,9 +95,9 @@ function PublicBookingPortal() {
     fetch('/api/services')
       .then(res => res.json())
       .then((data: any) => {
-        if (data?.services && Array.isArray(data.services) && data.services.length > 0) {
+        if (Array.isArray(data) && data.length > 0) {
           setServices(
-            data.services.map((s: any) => ({
+            data.map((s: any) => ({
               ...s,
               images: Array.isArray(s.images) && s.images.length > 0
                 ? s.images
@@ -305,7 +305,7 @@ function PublicBookingPortal() {
                   {lightboxItem.name}
                 </h3>
                 <p className="text-xs text-zinc-400 font-mono mt-0.5">
-                  {lightboxItem.category} · ${lightboxItem.price} · {lightboxItem.duration_minutes || lightboxItem.duration || 30} mins
+                  {lightboxItem.category} Â· ${lightboxItem.price} Â· {lightboxItem.duration_minutes || lightboxItem.duration || 30} mins
                 </p>
               </div>
             </div>
@@ -415,7 +415,7 @@ function PublicBookingPortal() {
 
       {/* Footer */}
       <footer className="border-t border-zinc-200 bg-white py-6 px-4 text-center text-xs text-zinc-400 font-mono">
-        Huzada Operations System · Protected Platform
+        Huzada Operations System Â· Protected Platform
       </footer>
     </div>
   );
@@ -448,3 +448,4 @@ export default function App() {
     </Routes>
   );
 }
+
