@@ -257,47 +257,46 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
       console.error('R2 Upload error:', err);
     }
   };
-const handleSaveService = (e: React.FormEvent) => {
+  // Fetch services from Turso on load
+  useEffect(() => {
+    fetch('/api/services').then(res => res.json()).then(data => {
+      if (Array.isArray(data)) setServices(data);
+    }).catch(console.error);
+  }, []);
+
+  const handleSaveService = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!serviceForm.name.trim()) {
       setServiceError('Service title is required.');
       return;
     }
+    
+    const serviceData = {
+      id: editingService?.id || `SRV-${Math.floor(Math.random() * 10000)}`,
+      name: serviceForm.name,
+      category: serviceForm.category === 'Custom' ? serviceForm.customCategory : serviceForm.category,
+      price: Number(serviceForm.price),
+      duration: Number(serviceForm.duration),
+      description: serviceForm.description,
+      images: serviceForm.images,
+      badge: serviceForm.badge
+    };
 
-    setServiceSaving(true);
     try {
-      const finalCategory =
-        serviceForm.category === 'Custom'
-          ? serviceForm.customCategory.trim() || 'General'
-          : serviceForm.category;
-
-      const finalImages = (serviceForm.images && serviceForm.images.length > 0)
-        ? serviceForm.images
-        : [DEFAULT_SERVICES[0].images[0]];
-
-      const newService: ServiceItem = {
-        id: editingService ? editingService.id : `srv-${Date.now().toString().slice(-6)}`,
-        name: serviceForm.name.trim(),
-        category: finalCategory,
-        price: Number(serviceForm.price) || 0,
-        duration: Number(serviceForm.duration) || 30,
-        description: serviceForm.description.trim(),
-        images: finalImages,
-        badge: serviceForm.badge.trim() || undefined,
-      };
-
-      const updated = editingService
-        ? services.map(s => (s.id === newService.id ? newService : s))
-        : [newService, ...services];
-
-      setServices(updated);
-      localStorage.setItem('huzada_booking_services', JSON.stringify(updated));
-      setIsServiceModalOpen(false);
-      setEditingService(null);
-    } catch {
-      setServiceError('Failed to save service.');
-    } finally {
-      setServiceSaving(false);
+      const res = await fetch('/api/services', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(serviceData)
+      });
+      
+      if (res.ok) {
+        // Refresh from database so UI updates instantly
+        const updated = await fetch('/api/services').then(r => r.json());
+        if (Array.isArray(updated)) setServices(updated);
+        setIsServiceModalOpen(false);
+      }
+    } catch (err) {
+      setServiceError('Failed to save to database.');
     }
   };
 
