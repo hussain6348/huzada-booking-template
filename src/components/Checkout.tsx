@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 
 export default function Checkout() {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -45,9 +45,10 @@ export default function Checkout() {
             <input type="date" name="date" required style={{ flex: 1, padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }} />
             <input type="time" name="time" required style={{ flex: 1, padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }} />
           </div>
-          <button type="submit" style={{ padding: '12px', backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>Confirm & Pay Later</button>
+          <button type="submit" style={{ padding: '12px', backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>SUBMIT</button>
         </form>
       )}
     </div>
   );
 }
+

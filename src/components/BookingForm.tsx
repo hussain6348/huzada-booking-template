@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { Calendar, Clock, User, Phone, Mail, X } from "lucide-react";
 import { clientConfig } from "../config/client";
 
@@ -123,7 +123,7 @@ export default function BookingForm({
         <div>
           <h2 className="text-xl font-bold text-gray-900">Checkout: {service?.name}</h2>
           <p className="text-sm text-gray-500 mt-1 font-medium">
-            Total: ${service?.price} � {service?.duration_minutes || service?.duration || 30} min
+            Total: ${service?.price} • {service?.duration_minutes || service?.duration || 30} min
           </p>
         </div>
         {onClose && (
@@ -211,7 +211,7 @@ export default function BookingForm({
             type="submit"
             className="w-full bg-blue-600 text-white font-bold text-lg py-4 rounded-xl hover:bg-blue-700 disabled:opacity-70 disabled:cursor-not-allowed transition-all flex justify-center items-center gap-2 shadow-md hover:shadow-lg cursor-pointer"
           >
-            {loading ? "Processing..." : `Confirm & Pay Later`}
+            {loading ? "Processing..." : `SUBMIT`}
           </button>
           <p className="text-center text-xs text-gray-400 mt-4 font-medium flex items-center justify-center gap-1">
             <span className="block w-2 h-2 rounded-full bg-green-500"></span> Details routed to WhatsApp
@@ -221,3 +221,4 @@ export default function BookingForm({
     </div>
   );
 }
+
