@@ -412,42 +412,45 @@ function PublicBookingPortal() {
       {/* Booking Form Modal Overlay */}
       {detailsService && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setDetailsService(null)}>
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] relative border border-gray-100" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setDetailsService(null)} className="absolute top-4 right-4 z-20 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-all cursor-pointer backdrop-blur-md shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-            <div className="relative h-64 sm:h-80 shrink-0 bg-gray-100 w-full overflow-hidden">
-              <img src={detailsService.image || detailsService.images?.[0] || ""} alt={detailsService.name} className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-              <div className="absolute bottom-0 left-0 w-full p-6 sm:p-8 text-white">
-                <div className="inline-block px-3 py-1 bg-blue-600 text-white text-[10px] font-bold uppercase tracking-wider rounded-full mb-3 shadow-md">{detailsService.category || "Service"}</div>
-                <h2 className="text-2xl sm:text-3xl font-bold leading-tight">{detailsService.name}</h2>
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh] relative border border-gray-100" onClick={(e) => e.stopPropagation()}>
+            {/* Clean Header Bar */}
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 bg-blue-50 text-blue-600 text-[11px] font-bold uppercase tracking-wider rounded-full border border-blue-100">
+                  {detailsService.category || "Service Details"}
+                </span>
               </div>
+              <button onClick={() => setDetailsService(null)} className="bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-800 p-2 rounded-full transition-all cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
             </div>
-            <div className="p-6 sm:p-8 overflow-y-auto bg-gray-50 flex-1">
-              <div className="flex justify-between items-center bg-white p-4 sm:p-5 rounded-2xl shadow-sm border border-gray-100 mb-6">
-                <div className="flex flex-col">
-                  <span className="text-[10px] sm:text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Duration</span>
-                  <div className="flex items-center gap-1.5 text-gray-900 font-bold text-sm sm:text-lg">
-                    <Clock size={18} className="text-blue-500" /> {detailsService.duration_minutes || detailsService.duration || 30} Min
+            {/* Scrollable Reading Body */}
+            <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-6 bg-white">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">{detailsService.name}</h2>
+                <div className="flex items-center gap-4 text-sm text-gray-600 pb-4 border-b border-gray-100">
+                  <div className="flex items-center gap-1.5 font-mono font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-lg">
+                    <Clock size={16} /> {detailsService.duration_minutes || detailsService.duration || 30} Minutes
+                  </div>
+                  <div className="font-mono font-bold text-xl text-gray-900">
+                    ${detailsService.price}
                   </div>
                 </div>
-                <div className="h-10 w-px bg-gray-200 mx-2"></div>
-                <div className="flex flex-col items-end">
-                  <span className="text-[10px] sm:text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Price</span>
-                  <span className="font-bold text-xl sm:text-2xl text-gray-900">${detailsService.price}</span>
-                </div>
               </div>
-              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 border-b border-gray-100 pb-3">Service Overview</h3>
-                <div className="prose prose-sm max-w-none text-gray-600 whitespace-pre-wrap leading-relaxed">
+              <div>
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Complete Description & Details</h3>
+                <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap leading-relaxed text-sm sm:text-base bg-gray-50 p-5 rounded-2xl border border-gray-100 shadow-inner">
                   {detailsService.description || "Professional appointment session tailored to your schedule."}
                 </div>
               </div>
             </div>
-            <div className="p-5 sm:p-6 bg-white border-t border-gray-100 shrink-0">
-              <button onClick={() => { setSelectedService(detailsService); setDetailsService(null); }} className="w-full bg-blue-600 text-white font-bold text-lg py-4 rounded-xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer flex justify-center items-center gap-2">
-                Book This Service
+            {/* Footer Action */}
+            <div className="p-5 sm:p-6 bg-white border-t border-gray-100 shrink-0 flex gap-3">
+              <button onClick={() => setDetailsService(null)} className="flex-1 bg-gray-100 text-gray-700 font-bold py-3.5 rounded-xl hover:bg-gray-200 transition-all cursor-pointer">
+                Close
+              </button>
+              <button onClick={() => { setSelectedService(detailsService); setDetailsService(null); }} className="flex-[2] bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl cursor-pointer flex justify-center items-center gap-2">
+                Book This Service (${detailsService.price})
               </button>
             </div>
           </div>
