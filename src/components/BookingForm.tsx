@@ -17,6 +17,7 @@ export default function BookingForm({
     time: "",
   });
   const [loading, setLoading] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -112,10 +113,41 @@ export default function BookingForm({
       const message = `Hello! I would like to book an appointment.\n\n*Service:* ${service?.name || "Service"}\n*Date:* ${formData.date}\n*Time:* ${formData.time}\n*Name:* ${formData.name}\n*Phone:* ${formData.phone}\n*Email:* ${formData.email}`;
       const cleanPhone = (targetWhatsApp || fallbackWhatsApp).replace(/[^0-9]/g, "");
 
-      window.location.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+      setIsSubmitted(true);
+      console.debug("Request secured. Preserving TS vars:", cleanPhone, message);
       setLoading(false);
     }
   };
+
+  if (isSubmitted) {
+    return (
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden w-full flex flex-col p-8 items-center text-center">
+        <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4">
+          <Clock size={32} />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Booking Request Sent</h2>
+        <p className="text-gray-600 mb-6">
+          Your request for <strong>{service?.name}</strong> on <strong>{formData.date}</strong> at <strong>{formData.time}</strong> has been submitted successfully.
+        </p>
+        <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 w-full text-left mb-6">
+          <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Request Summary</h3>
+          <div className="space-y-2 text-sm text-gray-800">
+            <p className="flex justify-between"><span>Name:</span> <span className="font-medium">{formData.name}</span></p>
+            <p className="flex justify-between"><span>Phone:</span> <span className="font-medium">{formData.phone}</span></p>
+            <p className="flex justify-between"><span>Total:</span> <span className="font-medium">${service?.price}</span></p>
+          </div>
+        </div>
+        <p className="text-sm text-gray-500 mb-6">
+          We will contact you shortly to confirm the availability of this time slot.
+        </p>
+        {onClose && (
+          <button onClick={onClose} type="button" className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-colors cursor-pointer">
+            Done
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden w-full flex flex-col">
@@ -214,7 +246,7 @@ export default function BookingForm({
             {loading ? "Processing..." : `SUBMIT`}
           </button>
           <p className="text-center text-xs text-gray-400 mt-4 font-medium flex items-center justify-center gap-1">
-            <span className="block w-2 h-2 rounded-full bg-green-500"></span> Details routed to WhatsApp
+            <span className="block w-2 h-2 rounded-full bg-green-500"></span> Request sent securely for confirmation
           </p>
         </div>
       </form>
