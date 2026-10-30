@@ -1,4 +1,4 @@
-import { createClient } from '@libsql/client/web';
+﻿import { createClient } from '@libsql/client/web';
 
 const jsonResponse = (data: any, status = 200) => {
   return new Response(JSON.stringify(data), {
@@ -8,6 +8,18 @@ const jsonResponse = (data: any, status = 200) => {
       'Access-Control-Allow-Origin': '*',
     },
   });
+};
+
+// Helper to extract the exact R2 object key from the image URL
+const extractFileKey = (urlOrPath: string) => {
+  if (!urlOrPath) return null;
+  try {
+    const urlObj = new URL(urlOrPath);
+    return decodeURIComponent(urlObj.pathname.substring(1));
+  } catch {
+    const path = urlOrPath.startsWith('/') ? urlOrPath.substring(1) : urlOrPath;
+    return decodeURIComponent(path);
+  }
 };
 
 export async function onRequestPut(context: any) {
@@ -30,7 +42,25 @@ export async function onRequestPut(context: any) {
 
     const { name, price, description, image_path } = body;
     const client = createClient({ url: tursoUrl.trim(), authToken: tursoToken.trim() });
-    
+
+    // --- 🧹 R2 ORPHAN CLEANUP LOGIC ---
+    try {
+      const result = await client.execute({ sql: 'SELECT image_path FROM products WHERE id = ?', args: [id] });
+      const oldImagePath = result.rows.length > 0 ? (result.rows[0].image_path as string) : null;
+      
+      const r2Bucket = env.BUCKET || env.R2_BUCKET || env.MEDIA;
+
+      if (oldImagePath && oldImagePath !== image_path && r2Bucket) {
+        const fileKey = extractFileKey(oldImagePath);
+        if (fileKey) {
+          await r2Bucket.delete(fileKey);
+        }
+      }
+    } catch (cleanupError) {
+      console.error("Non-fatal R2 cleanup error:", cleanupError);
+    }
+    // -----------------------------------
+
     await client.execute({
       sql: 'UPDATE products SET name = ?, price = ?, description = ?, image_path = ? WHERE id = ?',
       args: [name, price, description || '', image_path, id]
@@ -53,7 +83,25 @@ export async function onRequestDelete(context: any) {
 
     const id = context.params.id;
     const client = createClient({ url: tursoUrl.trim(), authToken: tursoToken.trim() });
-    
+
+    // --- 🧹 R2 ORPHAN CLEANUP LOGIC ---
+    try {
+      const result = await client.execute({ sql: 'SELECT image_path FROM products WHERE id = ?', args: [id] });
+      const oldImagePath = result.rows.length > 0 ? (result.rows[0].image_path as string) : null;
+      
+      const r2Bucket = env.BUCKET || env.R2_BUCKET || env.MEDIA;
+      
+      if (oldImagePath && r2Bucket) {
+        const fileKey = extractFileKey(oldImagePath);
+        if (fileKey) {
+          await r2Bucket.delete(fileKey);
+        }
+      }
+    } catch (cleanupError) {
+      console.error("Non-fatal R2 cleanup error:", cleanupError);
+    }
+    // -----------------------------------
+
     await client.execute({
       sql: 'DELETE FROM products WHERE id = ?',
       args: [id]
