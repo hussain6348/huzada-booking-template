@@ -1,9 +1,9 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from "react";
 
 export default function BookingsList() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [page, setPage] = useState(1);
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState("");
   const [loading, setLoading] = useState(true);
 
   const fetchBookings = async () => {
@@ -23,65 +23,74 @@ export default function BookingsList() {
   }, [page, date]);
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md border border-gray-100">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-4 sm:space-y-0">
-        <h2 className="text-xl font-bold text-gray-800">Booking Management</h2>
+    <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="p-6 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">Live Customer Bookings (Database)</h2>
+          <p className="text-sm text-gray-500 mt-1">Synchronized live from Serverless Environment to Secure Database</p>
+        </div>
         
         <div className="flex space-x-2">
           <input 
             type="date" 
             value={date}
-            onChange={(e) => {
-              setDate(e.target.value);
-              setPage(1); 
-            }}
-            className="border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => { setDate(e.target.value); setPage(1); }}
+            className="border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           {date && (
             <button 
-              onClick={() => { setDate(''); setPage(1); }}
-              className="bg-gray-100 text-gray-600 px-4 py-2 rounded hover:bg-gray-200 transition"
+              onClick={() => { setDate(""); setPage(1); }}
+              className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-300 transition"
             >
-              Clear Filter
+              Clear
             </button>
           )}
         </div>
       </div>
 
-      {loading ? (
-        <div className="py-10 text-center text-gray-500">Loading appointments...</div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="p-3 text-sm font-semibold text-gray-600">Date</th>
-                <th className="p-3 text-sm font-semibold text-gray-600">Time</th>
-                <th className="p-3 text-sm font-semibold text-gray-600">Customer</th>
-                <th className="p-3 text-sm font-semibold text-gray-600">Contact</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookings.length > 0 ? bookings.map((b, i) => (
-                <tr key={i} className="border-b border-gray-100 hover:bg-gray-50 transition">
-                  <td className="p-3 text-sm">{b.date}</td>
-                  <td className="p-3 text-sm">{b.time}</td>
-                  <td className="p-3 text-sm font-medium">{b.customer_name}</td>
-                  <td className="p-3 text-sm text-gray-500">{b.phone || b.email}</td>
+      <div className="p-0">
+        {loading ? (
+          <div className="py-12 text-center text-gray-500">Syncing database...</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-white border-b border-gray-200">
+                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date & Time</th>
+                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer & Service</th>
+                  <th className="p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Contact</th>
                 </tr>
-              )) : (
-                <tr><td colSpan={4} className="p-8 text-center text-gray-500">No bookings found.</td></tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {bookings.length > 0 ? bookings.map((b, i) => (
+                  <tr key={i} className="hover:bg-blue-50/50 transition duration-150">
+                    <td className="p-4">
+                      <div className="text-sm font-medium text-gray-900">{b.date}</div>
+                      <div className="text-sm text-gray-500">{b.time}</div>
+                    </td>
+                    <td className="p-4">
+                      <div className="text-sm font-medium text-gray-900">{b.customer_name}</div>
+                      <div className="text-sm text-gray-500">{b.service_name || 'Appointment'}</div>
+                    </td>
+                    <td className="p-4">
+                      <div className="text-sm text-gray-900">{b.phone}</div>
+                      <div className="text-sm text-gray-500">{b.email}</div>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr><td colSpan={3} className="p-12 text-center text-gray-500">No appointments recorded yet.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
-      <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
+      <div className="flex justify-between items-center p-4 border-t border-gray-200 bg-gray-50">
         <button 
           disabled={page === 1} 
           onClick={() => setPage(page - 1)}
-          className="px-4 py-2 bg-white border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition"
+          className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 disabled:opacity-50 hover:bg-gray-50 transition shadow-sm"
         >
           &larr; Previous
         </button>
@@ -89,7 +98,7 @@ export default function BookingsList() {
         <button 
           disabled={bookings.length < 50} 
           onClick={() => setPage(page + 1)}
-          className="px-4 py-2 bg-blue-600 text-white rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-blue-700 transition"
+          className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 disabled:opacity-50 hover:bg-gray-50 transition shadow-sm"
         >
           Next &rarr;
         </button>

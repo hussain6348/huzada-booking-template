@@ -498,11 +498,6 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
         <div className="bg-white rounded-2xl border border-zinc-200/90 shadow-xs overflow-hidden">
           <div className="p-5 sm:p-6 border-b border-zinc-100 flex items-center justify-between">
             <div>
-        {/* INJECTED PAGINATED TABLE */}
-        <div className="my-8 w-full">
-            <BookingsList />
-        </div>
-        {/* END INJECTED TABLE */}
               <h2 className="font-bold text-base text-zinc-900">Live Customer Bookings (Database)</h2>
               <p className="text-xs text-zinc-500 mt-0.5">
                 Synchronized live from Serverless Environment to Secure Database
