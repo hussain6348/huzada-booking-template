@@ -498,7 +498,85 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
         <div className="bg-white rounded-2xl border border-zinc-200/90 shadow-xs overflow-hidden">
           <div className="p-5 sm:p-6 border-b border-zinc-100 flex items-center justify-between">
             <div>
-        <BookingsList />
+        {/* INJECTED PAGINATED TABLE */}
+        <div className="my-8 w-full">
+            <BookingsList />
+        </div>
+        {/* END INJECTED TABLE */}
+              <h2 className="font-bold text-base text-zinc-900">Live Customer Bookings (Database)</h2>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Synchronized live from Serverless Environment to Secure Database
+              </p>
+            </div>
+            <span className="text-xs font-mono bg-zinc-100 text-zinc-600 px-2.5 py-1 rounded-lg">
+              {bookings?.length || 0} Records
+            </span>
+          </div>
+
+          <div className="p-4 sm:p-6">
+            {bookingsLoading ? (
+              <div className="p-8 text-center text-xs text-zinc-500 font-mono">
+                Querying bookings from Database...
+              </div>
+            ) : bookingsError ? (
+              <div className="p-8 text-center text-xs text-red-500 font-mono">
+                Failed to query bookings table. Database might be initializing.
+              </div>
+            ) : !bookings || bookings.length === 0 ? (
+              <div className="text-center py-12 px-4 border-2 border-dashed border-zinc-200 rounded-xl space-y-2">
+                <p className="text-sm font-semibold text-zinc-700">No appointments recorded yet.</p>
+                <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+                  Once customers submit the checkout form on the storefront, their details will appear here automatically.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-3.5">
+                {bookings.map((b: any) => (
+                  <button
+                    key={b.id || Math.random()}
+                    onClick={() => setSelectedBooking(b)}
+                    className="bg-white p-5 rounded-2xl border border-zinc-200/80 shadow-2xs hover:border-blue-300 hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2.5">
+                        <h3 className="font-bold text-base text-zinc-900">
+                          {b.customer_name || b.client_name || 'Anonymous Client'}
+                        </h3>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                          (b.status || 'Pending').toLowerCase() === 'pending'
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'bg-emerald-100 text-emerald-800'
+                        }`}>
+                          {b.status || 'Pending'}
+                        </span>
+                      </div>
+                      <p className="text-xs font-medium text-zinc-600">
+                        {b.service_name || 'Custom Service'} â€¢{' '}
+                        <span className="font-mono text-zinc-500">
+                          {b.customer_phone || b.client_phone || 'No Phone'}
+                        </span>
+                      </p>
+                      <p className="text-[11px] text-zinc-400 font-mono">
+                        Scheduled: {b.booking_date || 'TBD'} @ {b.booking_time || 'TBD'}
+                      </p>
+                    </div>
+
+                    <div className="text-left sm:text-right shrink-0">
+                      <span className="text-[11px] font-mono text-zinc-400 block mb-1">
+                        Recorded {b.created_at ? new Date(b.created_at).toLocaleDateString() : 'Recently'}
+                      </span>
+                      <span className="text-xs font-semibold text-blue-600 flex items-center gap-1 sm:justify-end">
+                        View Details <ExternalLink className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* TAB 2: SERVICES REGISTRY */}
       {activeTab === 'services' && (
         <div className="bg-white rounded-2xl border border-zinc-200/90 shadow-xs overflow-hidden divide-y divide-zinc-100">
