@@ -1,6 +1,6 @@
 ﻿import { createClient } from '@libsql/client/web';
 
-export async function onRequestGet(context) {
+export async function onRequestGet(context: any) {
   const url = new URL(context.request.url);
   const page = parseInt(url.searchParams.get('page') || '1');
   const limit = parseInt(url.searchParams.get('limit') || '50');
@@ -9,13 +9,13 @@ export async function onRequestGet(context) {
   const offset = (page - 1) * limit;
 
   const client = createClient({
-    url: context.env.TURSO_DATABASE_URL,
-    authToken: context.env.TURSO_AUTH_TOKEN,
+    url: context.env.TURSO_DATABASE_URL as string,
+    authToken: context.env.TURSO_AUTH_TOKEN as string,
   });
 
   try {
     let sql = '';
-    let args = [];
+    let args: any[] = [];
 
     if (searchDate) {
       sql = 'SELECT * FROM bookings WHERE date = ? ORDER BY time ASC LIMIT ? OFFSET ?';
@@ -31,7 +31,7 @@ export async function onRequestGet(context) {
       headers: { 'Content-Type': 'application/json' },
       status: 200
     });
-  } catch (error) {
+  } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }

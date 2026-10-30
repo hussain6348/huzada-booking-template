@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 
 export default function BookingsList() {
-  const [bookings, setBookings] = useState([]);
+  const [bookings, setBookings] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [date, setDate] = useState('');
   const [loading, setLoading] = useState(true);

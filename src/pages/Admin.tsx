@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import BookingsList from '../components/BookingsList';
 
-export default function AdminDashboard() {
+export function Admin() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <header className="mb-8">
@@ -10,9 +10,10 @@ export default function AdminDashboard() {
       </header>
       
       <main className="max-w-6xl mx-auto">
-        {/* The new paginated bookings table */}
         <BookingsList />
       </main>
     </div>
   );
 }
+
+export default Admin;
