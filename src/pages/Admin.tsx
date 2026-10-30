@@ -392,7 +392,7 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
               )}
               <p className="text-zinc-600 pt-1">
                 {health.code === 'TURSO_AUTH_401' || health.code === 'TURSO_AUTH_ERROR'
-                  ? 'The auth token provided in TURSO_AUTH_TOKEN is invalid or has expired. Generate a new token using `your database provider's console`.'
+                  ? 'The auth token provided in TURSO_AUTH_TOKEN is invalid or has expired. Generate a new token using `your database provider console`.'
                   : health.code === 'DB_PENDING'
                   ? 'Server Environment Variables are missing or the active deployment needs to be retried.'
                   : health.code === 'DB_INVALID_URL'
@@ -1030,6 +1030,7 @@ export function Admin({ onLogout }: { onLogout?: () => void }) {
 }
 
 export default Admin;
+
 
 
 
