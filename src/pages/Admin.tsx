@@ -314,7 +314,7 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
             </span>
           </div>
           <p className="text-xs sm:text-sm text-zinc-500 mt-1">
-            Real-time synchronization between Cloudflare Serverless and Turso libSQL
+            Real-time synchronization between Serverless Environment and Secure Database
           </p>
         </div>
 
@@ -354,7 +354,7 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
             <div>
               <h2 className="font-bold text-sm text-zinc-900">Database Connection Status</h2>
               <p className="text-xs text-zinc-500 font-mono mt-0.5">
-                {health?.databaseUrl || 'Turso libSQL Driver'}
+                {health?.databaseUrl || 'Database Driver'}
               </p>
             </div>
           </div>
@@ -381,7 +381,7 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
           <div className="bg-amber-50/70 p-4 sm:p-5 border-t border-amber-100 flex items-start gap-3 text-xs text-amber-900">
             <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="font-semibold">Turso Connection Issue Detected:</p>
+              <p className="font-semibold">Database Connection Issue Detected:</p>
               <p className="font-mono bg-white/70 px-2 py-1 rounded border border-amber-200/60 inline-block">
                 {health.error}
               </p>
@@ -392,11 +392,11 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
               )}
               <p className="text-zinc-600 pt-1">
                 {health.code === 'TURSO_AUTH_401' || health.code === 'TURSO_AUTH_ERROR'
-                  ? 'The auth token provided in TURSO_AUTH_TOKEN is invalid or has expired. Generate a new token using `turso db tokens create <db-name>`.'
+                  ? 'The auth token provided in TURSO_AUTH_TOKEN is invalid or has expired. Generate a new token using `your database provider's console`.'
                   : health.code === 'DB_PENDING'
-                  ? 'Cloudflare Pages Environment Variables are missing or the active deployment needs to be retried.'
+                  ? 'Server Environment Variables are missing or the active deployment needs to be retried.'
                   : health.code === 'DB_INVALID_URL'
-                  ? 'The TURSO_DATABASE_URL is incomplete or malformed. Ensure n8n passes the full libsql://<db>-<org>.turso.io hostname.'
+                  ? 'The TURSO_DATABASE_URL is incomplete or malformed. Ensure n8n passes the full complete database hostname.'
                   : 'Check your database connection and network firewall settings.'}
               </p>
             </div>
@@ -436,7 +436,7 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
             <p>
               <span className="text-zinc-500">Result:</span>{' '}
               {lastClientStatus.ok ? (
-                <span className="text-emerald-400 font-bold">200 OK (Saved to Turso)</span>
+                <span className="text-emerald-400 font-bold">200 OK (Saved to Database)</span>
               ) : (
                 <span className="text-red-400 font-bold">
                   HTTP {lastClientStatus.status} - {lastClientStatus.error} ({lastClientStatus.code})
@@ -492,14 +492,14 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
         </button>
       </div>
 
-      {/* TAB 1: CLIENT APPOINTMENTS LIST (Turso libSQL) */}
+      {/* TAB 1: CLIENT APPOINTMENTS LIST (Secure Database) */}
       {activeTab === 'appointments' && (
         <div className="bg-white rounded-2xl border border-zinc-200/90 shadow-xs overflow-hidden">
           <div className="p-5 sm:p-6 border-b border-zinc-100 flex items-center justify-between">
             <div>
-              <h2 className="font-bold text-base text-zinc-900">Live Customer Bookings (Turso)</h2>
+              <h2 className="font-bold text-base text-zinc-900">Live Customer Bookings (Database)</h2>
               <p className="text-xs text-zinc-500 mt-0.5">
-                Synchronized live from Cloudflare serverless to Turso libSQL
+                Synchronized live from Serverless Environment to Secure Database
               </p>
             </div>
             <span className="text-xs font-mono bg-zinc-100 text-zinc-600 px-2.5 py-1 rounded-lg">
@@ -510,7 +510,7 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
           <div className="p-4 sm:p-6">
             {bookingsLoading ? (
               <div className="p-8 text-center text-xs text-zinc-500 font-mono">
-                Querying bookings from Turso...
+                Querying bookings from Database...
               </div>
             ) : bookingsError ? (
               <div className="p-8 text-center text-xs text-red-500 font-mono">
@@ -728,7 +728,7 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
         </div>
       )}
 
-      {/* Booking Details Modal (Turso libSQL) */}
+      {/* Booking Details Modal (Secure Database) */}
       {selectedBooking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-zinc-200 animate-in zoom-in-95 duration-200">
@@ -813,7 +813,7 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
         </div>
       )}
 
-      {/* Service Modal (Add / Edit) with Cloudflare R2 Upload */}
+      {/* Service Modal (Add / Edit) with Secure Media Upload */}
       {isServiceModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-zinc-200 animate-in zoom-in-95 duration-200 my-8">
@@ -847,7 +847,7 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
                 {/* CLOUDFLARE R2 UPLOAD INJECTION START */}
                 <div className="space-y-1.5 pb-4 border-b border-zinc-100 mb-4 pt-2">
                   <label className="text-[11px] font-semibold text-zinc-700 uppercase tracking-wider">
-                    Cloudflare R2 Media Upload
+                    Secure Media Upload
                   </label>
                   <div 
                     className="flex items-center gap-3 p-3 border-2 border-dashed border-zinc-200 hover:border-zinc-400 rounded-xl bg-zinc-50 transition-colors cursor-pointer"
@@ -1030,5 +1030,6 @@ export function Admin({ onLogout }: { onLogout?: () => void }) {
 }
 
 export default Admin;
+
 
 
