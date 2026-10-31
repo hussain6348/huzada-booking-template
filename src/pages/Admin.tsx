@@ -821,10 +821,10 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
                   
                   <div>
                     <span className="block text-xs text-zinc-500 font-medium mb-1">Phone Number</span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-mono font-medium text-zinc-900">{selectedBooking.customer_phone || selectedBooking.client_phone || 'None'}</span>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-sm font-mono font-medium text-zinc-900 break-all">{selectedBooking.customer_phone || selectedBooking.client_phone || 'None'}</span>
                       {(selectedBooking.customer_phone || selectedBooking.client_phone) && (
-                        <a href={`tel:${selectedBooking.customer_phone || selectedBooking.client_phone}`} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 border border-green-200 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors">
+                        <a href={`tel:${selectedBooking.customer_phone || selectedBooking.client_phone}`} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-700 border border-green-200 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors shrink-0">
                           <Phone className="w-3.5 h-3.5" /> Call
                         </a>
                       )}
@@ -833,10 +833,10 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
 
                   <div>
                     <span className="block text-xs text-zinc-500 font-medium mb-1">Email Address</span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-medium text-zinc-900">{selectedBooking.customer_email || 'Not provided'}</span>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-sm font-medium text-zinc-900 break-all">{selectedBooking.customer_email || 'Not provided'}</span>
                       {selectedBooking.customer_email && (
-                        <a href={`mailto:${selectedBooking.customer_email}?subject=Regarding your booking for ${selectedBooking.service_name}`} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors">
+                        <a href={`mailto:${selectedBooking.customer_email}?subject=Regarding your booking for ${selectedBooking.service_name}`} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold hover:bg-blue-100 transition-colors shrink-0">
                           <Mail className="w-3.5 h-3.5" /> Email
                         </a>
                       )}
