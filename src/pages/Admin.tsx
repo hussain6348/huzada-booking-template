@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
-import BookingsList from '../components/BookingsList';
+
 import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   Database,
@@ -500,7 +500,7 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
             <div>
         {/* INJECTED PAGINATED TABLE */}
         <div className="my-8 w-full">
-            <BookingsList />
+            
         </div>
         {/* END INJECTED TABLE */}
               <h2 className="font-bold text-base text-zinc-900">Live Customer Bookings (Database)</h2>
@@ -1036,6 +1036,7 @@ export function Admin({ onLogout }: { onLogout?: () => void }) {
 }
 
 export default Admin;
+
 
 
 
