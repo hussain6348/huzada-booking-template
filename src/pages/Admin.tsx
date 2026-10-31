@@ -84,7 +84,7 @@ const fetchBookings = async ({ queryKey }: any) => {
   const [_key, page, date] = queryKey;
   const queryParams = new URLSearchParams({ page: String(page), limit: '50' });
   if (date) queryParams.append('date', date);
-  const res = await fetch(/api/bookings? + queryParams.toString());
+  const res = await fetch(`/api/bookings?` + queryParams.toString());
   if (!res.ok) throw new Error('Failed to load bookings');
   const data = await res.json();
   return data.bookings || data;
