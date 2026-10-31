@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate, Route, Routes, Link } from 'react-router-dom';
 import {
   Calendar,
@@ -158,16 +158,6 @@ function PublicBookingPortal() {
                 </span>
               </h1>
             </div>
-          </div>
-
-          <div className="flex items-center gap-2.5">
-            <Link
-              to="/admin"
-              className="bg-zinc-100 hover:bg-zinc-200 text-zinc-800 text-xs font-medium px-3.5 py-1.5 rounded-lg border border-zinc-200 transition-colors flex items-center gap-1.5 cursor-pointer"
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Admin Console</span>
-            </Link>
           </div>
         </div>
       </header>
