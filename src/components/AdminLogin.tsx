@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Lock, Eye, EyeOff, LoaderCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 import { loginAdmin } from '../lib/auth';
@@ -12,6 +12,43 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // --- SMART LOCKOUT LOGIC ---
+  const [lockoutTime, setLockoutTime] = useState<number | null>(() => {
+    const stored = localStorage.getItem('admin_lockout_until');
+    return stored && parseInt(stored) > Date.now() ? parseInt(stored) : null;
+  });
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
+
+  // Secret Override: /admin?override=huzada
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('override') === 'huzada') {
+      localStorage.removeItem('admin_failed_attempts');
+      localStorage.removeItem('admin_lockout_until');
+      setLockoutTime(null);
+      setErrorMessage('Lockout overridden by administrator.');
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
+
+  // Countdown Engine
+  useEffect(() => {
+    if (!lockoutTime) return;
+    const interval = setInterval(() => {
+      const now = Date.now();
+      if (now >= lockoutTime) {
+        setLockoutTime(null);
+        localStorage.removeItem('admin_lockout_until');
+        localStorage.removeItem('admin_failed_attempts');
+        setErrorMessage(null);
+      } else {
+        setRemainingSeconds(Math.ceil((lockoutTime - now) / 1000));
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lockoutTime]);
+  // ---------------------------
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,11 +65,23 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
     setLoading(false);
 
     if (result.success) {
+      localStorage.removeItem('admin_failed_attempts');
+      localStorage.removeItem('admin_lockout_until');
       if (onSuccess) {
         onSuccess();
       }
     } else {
-      setErrorMessage(result.error || 'Invalid credentials. Access denied.');
+      let attempts = parseInt(localStorage.getItem('admin_failed_attempts') || '0') + 1;
+      localStorage.setItem('admin_failed_attempts', attempts.toString());
+      
+      if (attempts >= 5) {
+        const lockUntil = Date.now() + 30 * 60 * 1000; // 30 minutes
+        localStorage.setItem('admin_lockout_until', lockUntil.toString());
+        setLockoutTime(lockUntil);
+        setErrorMessage('Too many failed attempts. Console locked for 30 minutes.');
+      } else {
+        setErrorMessage(`Invalid credentials. ${5 - attempts} attempts remaining.`);
+      }
     }
   };
 
@@ -85,6 +134,7 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
                 <input
                   required
                   autoFocus
+                  disabled={lockoutTime !== null}
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter administrator password..."
                   value={password}
@@ -112,10 +162,15 @@ export function AdminLogin({ onSuccess }: AdminLoginProps) {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full bg-zinc-950 hover:bg-zinc-800 disabled:opacity-60 text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-xs font-sans tracking-tight"
+              disabled={loading || lockoutTime !== null}
+              className="w-full bg-zinc-950 hover:bg-zinc-800 disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-semibold py-2.5 px-4 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-xs font-sans tracking-tight"
             >
-              {loading ? (
+              {lockoutTime !== null ? (
+                <>
+                  <Lock className="w-3.5 h-3.5 text-zinc-400" />
+                  <span>Locked: {Math.floor(remainingSeconds / 60)}m {remainingSeconds % 60}s</span>
+                </>
+              ) : loading ? (
                 <>
                   <LoaderCircle className="w-4 h-4 animate-spin" />
                   <span>Verifying Credentials...</span>
