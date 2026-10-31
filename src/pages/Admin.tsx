@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { useQuery, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
@@ -80,10 +80,14 @@ const DEFAULT_SERVICES: ServiceItem[] = [
 
 const queryClient = new QueryClient();
 
-const fetchBookings = async () => {
-  const res = await fetch('/bookings');
+const fetchBookings = async ({ queryKey }: any) => {
+  const [_key, page, date] = queryKey;
+  const queryParams = new URLSearchParams({ page: String(page), limit: '50' });
+  if (date) queryParams.append('date', date);
+  const res = await fetch(/api/bookings? + queryParams.toString());
   if (!res.ok) throw new Error('Failed to load bookings');
-  return res.json();
+  const data = await res.json();
+  return data.bookings || data;
 };
 
 const fetchHealth = async () => {
@@ -100,6 +104,8 @@ const fetchHealth = async () => {
 
 function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
   const [lastClientStatus, setLastClientStatus] = useState<any>(null);
+  const [bookingPage, setBookingPage] = useState(1);
+  const [selectedDate, setSelectedDate] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
 
   // Tab & Service Registry State
@@ -164,7 +170,7 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
     refetch: refetchBookings,
     isFetching: bookingsFetching,
   } = useQuery({
-    queryKey: ['bookings'],
+    queryKey: ['bookings', bookingPage, selectedDate],
     queryFn: fetchBookings,
     refetchInterval: 10000,
   });
@@ -496,21 +502,30 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
       {/* TAB 1: CLIENT APPOINTMENTS LIST (Secure Database) */}
       {activeTab === 'appointments' && (
         <div className="bg-white rounded-2xl border border-zinc-200/90 shadow-xs overflow-hidden">
-          <div className="p-5 sm:p-6 border-b border-zinc-100 flex items-center justify-between">
+          <div className="p-5 sm:p-6 border-b border-zinc-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-        {/* INJECTED PAGINATED TABLE */}
-        <div className="my-8 w-full">
-            
-        </div>
-        {/* END INJECTED TABLE */}
               <h2 className="font-bold text-base text-zinc-900">Live Customer Bookings (Database)</h2>
               <p className="text-xs text-zinc-500 mt-0.5">
                 Synchronized live from Serverless Environment to Secure Database
               </p>
             </div>
-            <span className="text-xs font-mono bg-zinc-100 text-zinc-600 px-2.5 py-1 rounded-lg">
-              {bookings?.length || 0} Records
-            </span>
+            
+            <div className="flex items-center gap-2">
+              <input 
+                type="date" 
+                value={selectedDate}
+                onChange={(e) => { setSelectedDate(e.target.value); setBookingPage(1); }}
+                className="border border-zinc-200 px-3 py-1.5 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-zinc-900 text-zinc-700"
+              />
+              {selectedDate && (
+                <button 
+                  onClick={() => { setSelectedDate(""); setBookingPage(1); }}
+                  className="bg-zinc-100 text-zinc-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-zinc-200 transition"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="p-4 sm:p-6">
@@ -573,6 +588,30 @@ function AdminDashboard({ onLogout }: { onLogout?: () => void }) {
                 ))}
               </div>
             )}
+            
+            {/* INJECTED: Pagination Controls */}
+            {(!bookingsLoading && !bookingsError && bookings?.length > 0) && (
+              <div className="flex justify-between items-center mt-6 pt-4 border-t border-zinc-100">
+                <button 
+                  disabled={bookingPage === 1} 
+                  onClick={() => setBookingPage(bookingPage - 1)}
+                  className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-zinc-700 disabled:opacity-40 hover:bg-zinc-50 transition shadow-2xs cursor-pointer"
+                >
+                  &larr; Previous
+                </button>
+                <span className="text-xs font-mono font-bold text-zinc-600 bg-zinc-50 px-3 py-1.5 rounded-lg border border-zinc-200">
+                  Page {bookingPage}
+                </span>
+                <button 
+                  disabled={bookings?.length < 50} 
+                  onClick={() => setBookingPage(bookingPage + 1)}
+                  className="px-4 py-2 bg-white border border-zinc-200 rounded-xl text-xs font-bold text-zinc-700 disabled:opacity-40 hover:bg-zinc-50 transition shadow-2xs cursor-pointer"
+                >
+                  Next &rarr;
+                </button>
+              </div>
+            )}
+
           </div>
         </div>
       )}
